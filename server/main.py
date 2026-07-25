@@ -51,6 +51,13 @@ async def root():
             return HTMLResponse(content=f.read())
     return {"message": "Svoya Igra Server"}
 
+@app.get("/api/my_ip")
+async def get_my_ip():
+    import socket
+    hostname = socket.gethostname()
+    ip = socket.gethostbyname(hostname)
+    return {"ip": ip}
+
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
