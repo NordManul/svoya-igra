@@ -91,6 +91,7 @@ body{font-family:Arial;background:#1a1a2e;color:white;min-height:100vh}
 <div id="lobby-screen" style="display:none;text-align:center;padding-top:25vh">
 <p style="font-size:20px;color:white;margin-top:10px;font-weight:bold">КОД КОМНАТЫ:</p>
 <h2 style="font-size:48px;letter-spacing:8px;margin:5px 0" id="rcodebig"></h2>
+<p style="font-size:20px;color:white;margin-bottom:10px;font-weight:bold" id="lobby-ip"></p>
 <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0" id="player-slots">
   <div class="player-slot" style="width:130px;height:80px;border:3px solid #1a1a2e;border-radius:12px;box-shadow:0 4px 8px rgba(0,0,0,0.5);background:#2a2a4a;display:flex;align-items:center;justify-content:center;color:#888;font-size:14px">Empty</div>
   <div class="player-slot" style="width:130px;height:80px;border:3px solid #1a1a2e;border-radius:12px;box-shadow:0 4px 8px rgba(0,0,0,0.5);background:#2a2a4a;display:flex;align-items:center;justify-content:center;color:#888;font-size:14px">Empty</div>
@@ -156,7 +157,14 @@ async function saveDraft(){T.name=document.getElementById('gameName').value||'My
 
 async function startGame(){T.name=document.getElementById('gameName').value||'My Game';var r=await fetch('/api/create_room',{method:'POST'});var d=await r.json();roomCode=d.room_code;await fetch('/api/save_template/'+roomCode,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(T)});playerId=Math.random().toString(36).substr(2,8);window.window.ws=new WebSocket('ws://'+window.location.hostname+':8000/ws/'+roomCode+'/'+playerId);window.ws.onopen=function(){window.ws.send(JSON.stringify({type:'join',name:document.getElementById('hostName').value||'Host'}))};joined=false;window.window.ws.onmessage=function(ev){var msg=JSON.parse(ev.data); if(msg.type==='final_scores'){showFinalResults(msg.scores);return;} if(msg.type==='final_update'){updateFinalOverlay(msg);return;}
   if(msg.type==='game_state'){document.getElementById('lobby-screen').style.display='none';document.getElementById('game-screen').style.display='flex';document.getElementById('game-room-code').textContent=roomCode;renderGame(msg);return}
-  if(msg.type==='room_state'){if(!joined){window.ws.send(JSON.stringify({type:"set_creator"}));joined=true;return}document.getElementById('editor-screen').style.display='none';document.getElementById('lobby-screen').style.display='block';document.getElementById('rcodebig').textContent=roomCode;var h='<h3>Players ('+msg.players_count+'/5):</h3>';h+='<p>Host: <b>'+(msg.host_name||'Host')+'</b></p>';for(var id in msg.players){var p=msg.players[id];if(!p.is_host)h+='<div style="padding:8px;background:#2a2a4a;border-radius:5px;margin:3px">'+p.name+'</div>'}if(!msg.players_count)h+='<p style="color:#aaa">Waiting...</p>';      var slots = document.querySelectorAll('.player-slot');
+  if(msg.type==='room_state'){if(!joined){window.ws.send(JSON.stringify({type:"set_creator"}));joined=true;return}document.getElementById('editor-screen').style.display='none';document.getElementById('lobby-screen').style.display='block';document.getElementById('rcodebig').textContent=roomCode;
+      var ip = window.location.hostname;
+      if(ip === 'localhost' || ip === '127.0.0.1'){
+        var r = new XMLHttpRequest();
+        r.open('GET', '/api/my_ip', false);
+        try { r.send(); var d = JSON.parse(r.responseText); ip = d.ip; } catch(e) {}
+      }
+      document.getElementById('lobby-ip').innerHTML = 'Для игроков: <b>http://'+ip+':8000/player.html</b>';var h='<h3>Players ('+msg.players_count+'/5):</h3>';h+='<p>Host: <b>'+(msg.host_name||'Host')+'</b></p>';for(var id in msg.players){var p=msg.players[id];if(!p.is_host)h+='<div style="padding:8px;background:#2a2a4a;border-radius:5px;margin:3px">'+p.name+'</div>'}if(!msg.players_count)h+='<p style="color:#aaa">Waiting...</p>';      var slots = document.querySelectorAll('.player-slot');
       var names = [];
       for(var id in msg.players){var p=msg.players[id];if(!p.is_host)names.push(p.name);}
       for(var i=0;i<5;i++){
