@@ -71,9 +71,24 @@ body{font-family:Arial;background:#1a1a2e;color:white;min-height:100vh}
 #start-screen {
   position: relative;
   overflow: hidden;
-  padding: 120px 20px 40px;
-}
 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 100vh;
+  padding: 40px 20px;
+  box-sizing: border-box;
+}
+.start-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+
+  transform: translateY(50px);
+}
 /* Вторая картинка: только на start-screen */
 #start-screen::before {
   content: "";
@@ -146,7 +161,7 @@ body{font-family:Arial;background:#1a1a2e;color:white;min-height:100vh}
   overflow-wrap: anywhere;
 
   cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.30);
+  box-shadow: 0 4px 8px rgba(37, 33, 59, 0.30);
   transition: transform 0.15s ease, box-shadow 0.15s ease,
               background-color 0.15s ease;
 }
@@ -154,7 +169,7 @@ body{font-family:Arial;background:#1a1a2e;color:white;min-height:100vh}
 .draft-card:hover {
   transform: translateY(-4px);
   background: #ffffff;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.38);
+  box-shadow: 0 8px 16px rgba(37, 33, 59, 0.38);
 }
 
 /* Кнопка-крестик справа сверху */
@@ -223,11 +238,22 @@ body{font-family:Arial;background:#1a1a2e;color:white;min-height:100vh}
 <body>
 
 <!-- START SCREEN -->
-<div id="start-screen" class="screen-with-background"
-     style="display:flex;flex-direction:column;align-items:center;justify-content:center">
-<button class="btn" style="background:#e95d4f;color:white;font-size:18px;padding:14px 30px;margin:5px;width:260px;border:3px solid #1a1a2e;box-shadow:0 4px 8px rgba(0,0,0,0.5);border-radius:12px" onclick="showEditor()">Создать игру</button><br>
+<div id="start-screen" class="screen-with-background">
+  <div class="start-buttons">
 
-<button class="btn" style="background:white;color:#1a1a2e;font-size:18px;padding:14px 30px;margin:5px;width:260px;border:3px solid #1a1a2e;box-shadow:0 4px 8px rgba(0,0,0,0.5);border-radius:12px" onclick="loadDrafts()">Мои черновики</button>
+    <button class="btn"
+  style="background:#e95d4f;color:white;font-size:20px;padding:18px 36px;margin:0;width:290px;border:3px solid #1a1a2e;box-shadow:0 4px 8px rgba(37,33,59,0.5);border-radius:12px"
+  onclick="showEditor()">
+  Создать игру
+</button>
+
+<button class="btn"
+  style="background:white;color:#1a1a2e;font-size:20px;padding:18px 36px;margin:0;width:290px;border:3px solid #1a1a2e;box-shadow:0 4px 8px rgba(37,33,59,0.5);border-radius:12px"
+  onclick="loadDrafts()">
+  Мои черновики
+</button>
+
+  </div>
 </div>
 
 <!-- DRAFTS SCREEN -->
@@ -299,8 +325,19 @@ body{font-family:Arial;background:#1a1a2e;color:white;min-height:100vh}
 var T,prices=[[100,200,300,400,500],[200,400,600,800,1000],[300,600,900,1200,1500]],currentRound=0,roomCode,playerId,joined=false;
 
 function showEditor(){document.getElementById('start-screen').style.display='none';document.getElementById('editor-screen').style.display='block'}
-function backToStart(){document.getElementById('editor-screen').style.display='none';document.getElementById('start-screen').style.display='block'}
+function showStartScreen() {
+  document.getElementById('start-screen').style.display = 'flex';
+}
+function backToStart() {
+  document.getElementById('editor-screen').style.display = 'none';
+  showStartScreen();
+  window.ws = null;
+}
 
+function backFromDrafts() {
+  document.getElementById('drafts-screen').style.display = 'none';
+  showStartScreen();
+}
 window.ws=null;
 function initTemplate(){T={rounds:[],final:[],name:'My Game'};for(var r=0;r<3;r++){var cats=[];for(var c=0;c<5;c++){var qs=[];for(var q=0;q<5;q++)qs.push({price:prices[r][q],text:'',answer:'',qmedia:'',amedia:''});cats.push({name:'Theme '+(c+1),questions:qs})}T.rounds.push({name:'Round '+(r+1),categories:cats})}for(var i=0;i<10;i++)T.final.push({name:'Theme '+(i+1),text:'',answer:'',qmedia:'',amedia:''})}
 initTemplate();document.addEventListener("click",function(e){var c=e.target.closest(".bcell");if(!c)return;var cat=c.getAttribute("data-cat");var price=c.getAttribute("data-price");var ex=c.getAttribute("data-exists");var sel=c.getAttribute("data-sel");if(cat&&price&&ex==="1"&&sel==="0"){window.ws.send(JSON.stringify({type:"select_question",category:cat,price:parseInt(price)}))}});document.addEventListener("click",function(e){var c=e.target.closest(".bcell");if(!c)return;var cat=c.getAttribute("data-cat");var price=c.getAttribute("data-price");var ex=c.getAttribute("data-exists");var sel=c.getAttribute("data-sel");if(cat&&price&&ex==="1"&&sel==="0"){window.ws.send(JSON.stringify({type:"select_question",category:cat,price:parseInt(price)}))}});switchRound(0);
@@ -342,11 +379,6 @@ async function loadDrafts() {
   }
 
   document.getElementById('drafts-list').innerHTML = h;
-}
-function backFromDrafts() {
-  document.getElementById('drafts-screen').style.display = 'none';
-
-  document.getElementById('start-screen').style.display = 'flex';
 }
 async function openDraft(id){var r=await fetch('/api/draft/load',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id})});var d=await r.json();if(d.template){T=d.template;document.getElementById('drafts-screen').style.display = 'none';showEditor();document.getElementById('gameName').value=T.name||'';switchRound(0)}}
 async function saveDraft(){T.name=document.getElementById('gameName').value||'My Game';var did=Math.random().toString(36).substr(2,8);await fetch('/api/draft/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:did,template:T})});alert('Draft saved!')}
