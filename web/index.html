@@ -1,7 +1,16 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8"><title>Svoya Igra</title>
+  <meta charset="UTF-8">
+  <title>Svoya Igra</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@600;700;800&display=swap"
+    rel="stylesheet"
+  >
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Arial;background:#1a1a2e;color:white;min-height:100vh}
@@ -870,6 +879,775 @@ body{font-family:Arial;background:#1a1a2e;color:white;min-height:100vh}
   display: block !important;
 }
 
+    /* ===== НОВЫЕ ШРИФТЫ И ОБЩИЙ ФОН ===== */
+
+/* Manrope для всего приложения */
+html,
+body,
+button,
+input,
+textarea,
+select {
+  font-family: "Manrope", Arial, sans-serif !important;
+}
+
+/* Светлый фон вместо старого #1a1a2e */
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+  background: #fff8ed !important;
+}
+
+/* Экран редактора занимает всю высоту */
+#editor-screen {
+  min-height: 100vh !important;
+  background: #fff8ed !important;
+}
+
+/* Unbounded только у надписи «Своя игра» */
+#editor-screen .sidebar-brand {
+  font-family: "Unbounded", Arial, sans-serif !important;
+  font-size: 34px !important;
+  font-weight: 700 !important;
+  letter-spacing: -1.6px !important;
+}
+
+/* Убирает старую тёмную полосу сверху редактора */
+#editor-screen .topbar {
+  background: #fff8ed !important;
+}
+
+/* Убирает тёмную область слева от лиловой панели */
+#editor-screen::after {
+  background: #fff8ed !important;
+}
+    /* Скругление карточек тем */
+#editor-screen .theme-block,
+#editor-screen .final-item {
+  overflow: hidden !important;
+  border-radius: 22px !important;
+}
+
+/* Скругление поля с названием темы: Theme 1, Theme 2 и т. д. */
+#editor-screen .theme-block > input[type="text"],
+#editor-screen .final-item > input[type="text"] {
+  border-radius: 12px !important;
+}
+    /* Более высокое поле названия темы */
+#editor-screen .theme-block > input[type="text"],
+#editor-screen .final-item > input[type="text"] {
+  min-height: 55px !important;
+  padding: 14px 18px !important;
+  box-sizing: border-box !important;
+}
+
+    /* ===== ЭКРАН КОМНАТЫ / ЛОББИ ===== */
+
+#lobby-screen {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 74px 24px 28px;
+  background: #fff8ed;
+  color: #20203a;
+  font-family: "Manrope", Arial, sans-serif;
+}
+
+#lobby-screen .lobby-layout {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: calc(100vh - 102px);
+}
+
+#lobby-screen .lobby-card {
+  width: min(930px, 100%);
+  box-sizing: border-box;
+  padding: 38px 50px 62px;
+  border: 2px solid #25233d;
+  border-radius: 24px;
+  background: #fffdf9;
+  box-shadow: 0 7px 0 #25233d;
+}
+
+#lobby-screen .lobby-card h1 {
+  margin: 0;
+  color: #20203a;
+  font-family: "Manrope", Arial, sans-serif;
+  font-size: clamp(32px, 3.1vw, 45px);
+  font-weight: 800;
+  letter-spacing: -1.8px;
+  line-height: 1.14;
+}
+
+#lobby-screen .lobby-description {
+  max-width: 750px;
+  margin: 24px 0 33px;
+  color: #20203a;
+  font-size: clamp(19px, 1.8vw, 27px);
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+#lobby-screen .lobby-code-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#lobby-screen .lobby-code-label {
+  margin-bottom: 17px;
+  color: #20203a;
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: 7px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+#lobby-screen .lobby-code {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(350px, 100%);
+  min-height: 93px;
+  box-sizing: border-box;
+  padding: 14px 18px;
+  border: 2px solid #25233d;
+  border-radius: 18px;
+  background: #ddd0f5;
+  color: #20203a;
+  font-family: "Manrope", Arial, sans-serif;
+  font-size: clamp(31px, 3.6vw, 43px);
+  font-weight: 800;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+#lobby-screen .lobby-copy-button {
+  margin-top: 22px;
+  padding: 7px 11px;
+  border: 2px solid #25233d;
+  border-radius: 12px;
+  background: #fffdf9;
+  color: #20203a;
+  box-shadow: 0 3px 0 #25233d;
+  cursor: pointer;
+  font-family: "Manrope", Arial, sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+
+#lobby-screen .lobby-copy-button:hover {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #25233d;
+}
+
+#lobby-screen .lobby-link {
+  min-height: 22px;
+  margin: 14px 0 0;
+  color: #167d5d;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+#lobby-screen .lobby-link b {
+  font-weight: 800;
+}
+
+#lobby-screen .lobby-players-title {
+  margin: 31px 0 25px;
+  color: #20203a;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+#lobby-screen .lobby-player-slots {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 24px;
+}
+
+#lobby-screen .player-slot {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  min-height: 47px;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  border: 2px dashed #25233d !important;
+  border-radius: 15px !important;
+  background: #fffdf9 !important;
+  color: transparent !important;
+  box-shadow: none !important;
+  font-family: "Manrope", Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.1;
+  text-align: center;
+  overflow: hidden;
+}
+
+/* Игроки, которых заполнит текущий JavaScript */
+#lobby-screen .player-slot:not(:empty) {
+  border-style: solid !important;
+  color: #20203a !important;
+  box-shadow: 0 5px 0 #25233d !important;
+}
+
+/* Цвета карточек игроков циклически повторяются */
+#lobby-screen .player-slot:nth-child(1) {
+  background: #ffcdb8 !important;
+}
+
+#lobby-screen .player-slot:nth-child(2) {
+  background: #ffe78a !important;
+}
+
+#lobby-screen .player-slot:nth-child(3) {
+  background: #94c9ef !important;
+}
+
+#lobby-screen .player-slot:nth-child(4) {
+  background: #abe7d0 !important;
+}
+
+#lobby-screen .player-slot:nth-child(5) {
+  background: #ddd0f5 !important;
+}
+
+/* Пустые карточки должны оставаться светлыми */
+#lobby-screen .player-slot:empty {
+  background: #fffdf9 !important;
+}
+
+/* Кнопка ведущего остаётся там же, ниже карточки */
+#lobby-screen .lobby-start-button {
+  display: none;
+  width: min(520px, 100%);
+  min-height: 92px;
+  margin-top: 34px;
+  border: 2px solid #25233d;
+  border-radius: 18px;
+  background: #abe7d0 !important;
+  color: #111;
+  box-shadow: none;
+  font-family: "Manrope", Arial, sans-serif;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 800;
+  letter-spacing: -1.2px;
+  text-transform: none;
+}
+
+#lobby-screen .lobby-start-button:hover {
+  transform: translateY(-2px);
+  background: #96dcc0 !important;
+}
+
+/* Декоративные круги */
+#lobby-screen .lobby-orb {
+  position: absolute;
+  z-index: 1;
+  width: 300px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+#lobby-screen .lobby-orb-yellow {
+  top: -2px;
+  left: -8px;
+  background: #ffe9a9;
+}
+
+#lobby-screen .lobby-orb-blue {
+  right: -86px;
+  bottom: -55px;
+  width: 420px;
+  background: #c9e6f6;
+}
+
+@media (max-width: 800px) {
+  #lobby-screen {
+    padding: 28px 16px;
+  }
+
+  #lobby-screen .lobby-card {
+    padding: 28px 22px 36px;
+  }
+
+  #lobby-screen .lobby-code-label {
+    font-size: 17px;
+    letter-spacing: 4px;
+  }
+
+  #lobby-screen .lobby-player-slots {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  #lobby-screen .lobby-start-button {
+    min-height: 72px;
+    margin-top: 24px;
+  }
+
+  #lobby-screen .lobby-orb-yellow {
+    width: 170px;
+  }
+
+  #lobby-screen .lobby-orb-blue {
+    width: 240px;
+  }
+}
+
+    /* ===== КОМПАКТНОЕ ЛОББИ ===== */
+
+/* Заголовок как логотип — Unbounded */
+#lobby-screen .lobby-card h1 {
+  font-family: "Unbounded", Arial, sans-serif !important;
+  font-size: clamp(27px, 2.5vw, 37px) !important;
+  font-weight: 700 !important;
+  letter-spacing: -1.4px !important;
+}
+
+/* Ссылка на подключение игроков */
+#lobby-screen .lobby-link {
+  margin-top: 13px !important;
+  font-size: 17px !important;
+  line-height: 1.35 !important;
+}
+
+/* Убираем лишнюю высоту у экрана */
+#lobby-screen {
+  min-height: 100vh !important;
+  padding: 32px 24px 20px !important;
+  overflow: hidden !important;
+}
+
+/* Общая вертикальная компоновка */
+#lobby-screen .lobby-layout {
+  min-height: 0 !important;
+}
+
+/* Карточка становится компактнее */
+#lobby-screen .lobby-card {
+  padding: 30px 50px 36px !important;
+}
+
+/* Сокращаем интервалы внутри карточки */
+#lobby-screen .lobby-description {
+  margin: 16px 0 22px !important;
+  font-size: clamp(17px, 1.55vw, 23px) !important;
+  line-height: 1.42 !important;
+}
+
+#lobby-screen .lobby-code-label {
+  margin-bottom: 11px !important;
+  font-size: 20px !important;
+}
+
+#lobby-screen .lobby-code {
+  min-height: 77px !important;
+  font-size: clamp(28px, 3vw, 38px) !important;
+}
+
+#lobby-screen .lobby-copy-button {
+  margin-top: 14px !important;
+}
+
+#lobby-screen .lobby-players-title {
+  margin: 22px 0 16px !important;
+}
+
+#lobby-screen .lobby-player-slots {
+  gap: 16px !important;
+}
+
+#lobby-screen .player-slot {
+  min-height: 43px !important;
+}
+
+/* Кнопка старта ниже карточки, но без большого отступа */
+#lobby-screen .lobby-start-button {
+  min-height: 72px !important;
+  margin-top: 22px !important;
+  font-size: clamp(25px, 2.6vw, 34px) !important;
+}
+
+   /* Увеличение карточки лобби и всего содержимого */
+#lobby-screen .lobby-layout {
+  transform: translateY(50px) scale(1.1);
+  transform-origin: top center;
+}
+    /* Manrope для кнопок главного экрана */
+#start-screen .start-buttons .btn {
+  font-family: "Manrope", Arial, sans-serif !important;
+  font-weight: 800 !important;
+}
+
+    /* ===== ИГРОВОЕ ПОЛЕ ===== */
+
+#game-screen {
+  min-height: 100vh !important;
+  height: auto !important;
+  display: none;
+  background: #fff8ed !important;
+  color: #20203a;
+  font-family: "Manrope", Arial, sans-serif;
+}
+
+/* Верхняя область: раунд, ведущий и игроки */
+#game-screen .game-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 30px;
+  padding: 36px 72px 6px;
+  background: transparent !important;
+  color: #20203a;
+}
+
+#game-screen .game-header h2 {
+  margin: 0;
+  color: #20203a;
+  font-family: "Unbounded", Arial, sans-serif;
+  font-size: clamp(24px, 2.4vw, 37px);
+  font-weight: 700;
+  letter-spacing: -1.7px;
+}
+
+/* Прячем технические «Room» и «Host» в старом header,
+   но не меняем их элементы и логику */
+#game-screen .game-header > span {
+  display: none;
+}
+
+/* Игроки располагаются сверху справа */
+#game-screen .players-row {
+  position: absolute;
+  z-index: 5;
+  top: 34px;
+  right: 72px;
+  width: min(560px, 43vw);
+  padding: 58px 0 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 34px;
+  background: transparent !important;
+}
+
+/* Подпись ведущего создаём из CSS */
+#game-screen .players-row::before {
+  content: "Выбирает: " attr(data-selector-name);
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: max-content;
+  transform: translateX(-50%);
+  color: #20203a;
+  font-family: "Unbounded", Arial, sans-serif;
+  font-size: clamp(17px, 1.7vw, 25px);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Карточка игрока */
+#game-screen .player-badge {
+  min-width: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(110px, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  background: transparent !important;
+  text-align: left;
+}
+
+#game-screen .player-badge .pname {
+  min-height: 48px;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border: 2px solid #25233d;
+  border-radius: 16px;
+  background: #abe7d0;
+  color: #20203a;
+  box-shadow: 0 5px 0 #25233d;
+  font-family: "Manrope", Arial, sans-serif;
+  font-size: clamp(18px, 1.8vw, 27px);
+  font-weight: 800;
+  letter-spacing: 3px;
+}
+
+#game-screen .player-badge .pscore {
+  color: #111 !important;
+  font-family: "Manrope", Arial, sans-serif;
+  font-size: clamp(24px, 2.7vw, 42px);
+  font-weight: 800;
+  line-height: 1;
+}
+
+
+
+/* Цвета карточек игроков */
+#game-screen .player-badge:nth-child(1) .pname {
+  background: #ffcdb8;
+}
+
+#game-screen .player-badge:nth-child(2) .pname {
+  background: #ffe78a;
+}
+
+#game-screen .player-badge:nth-child(3) .pname {
+  background: #94c9ef;
+}
+
+#game-screen .player-badge:nth-child(4) .pname {
+  background: #abe7d0;
+}
+
+#game-screen .player-badge:nth-child(5) .pname {
+  background: #ddd0f5;
+}
+
+/* Центральная область с полем */
+#game-screen .board-wrap {
+  flex: none;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 105px 32px 28px;
+}
+
+/*
+  ВАЖНО: именно 5 колонок.
+  JS продолжает создавать 5 тем и 5 рядов цен.
+*/
+#game-screen .board-grid {
+  width: min(100%, 900px);
+  max-width: 900px;
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  grid-auto-rows: 82px;
+  gap: 20px 28px !important;
+}
+
+/* Общие карточки: темы и цены */
+#game-screen .bcell {
+  min-height: 0 !important;
+  padding: 10px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #25233d;
+  border-radius: 18px;
+  background: #ffe78a !important;
+  color: #20203a;
+  box-shadow: 0 6px 0 #25233d;
+  cursor: pointer;
+  font-family: "Manrope", Arial, sans-serif;
+  font-size: clamp(25px, 3vw, 43px);
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+}
+
+#game-screen .bcell:hover:not(.head):not(.used) {
+  transform: translateY(3px);
+  box-shadow: 0 3px 0 #25233d;
+}
+
+/* Темы */
+#game-screen .bcell.head {
+  min-height: 78px !important;
+  padding: 10px 12px;
+  border-radius: 18px;
+  background: #ddd0f5 !important;
+  color: #20203a;
+  box-shadow: 0 6px 0 #25233d;
+  cursor: default;
+  font-size: clamp(12px, 1.35vw, 18px);
+  font-weight: 800;
+  letter-spacing: 1px;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+#game-screen .bcell.head:nth-child(2) {
+  background: #abe7d0 !important;
+}
+
+#game-screen .bcell.head:nth-child(3) {
+  background: #94c9ef !important;
+}
+
+#game-screen .bcell.head:nth-child(4) {
+  background: #f1a6d7 !important;
+}
+
+#game-screen .bcell.head:nth-child(5) {
+  background: #ffcdb8 !important;
+}
+
+/* Уже выбранный вопрос */
+#game-screen .bcell.used {
+  background: #ddd9d2 !important;
+  color: #8b8791 !important;
+  box-shadow: none;
+  cursor: default;
+  opacity: .72;
+}
+
+/* Выбранный ведущим вопрос */
+#game-screen .bcell.selected {
+  background: #f78376 !important;
+  color: #20203a !important;
+  animation: none !important;
+}
+
+/* Нижняя панель управления */
+#game-screen .ctrl-bar {
+  min-height: 75px;
+  padding: 12px 32px 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  background: transparent !important;
+}
+
+/* Сохраняем кнопку «Перейти к финалу» */
+#game-screen .ctrl-bar .btn-gray[onclick="skipToFinal()"] {
+  position: fixed;
+  z-index: 20;
+  right: 26px;
+  bottom: 24px;
+  min-width: 145px;
+  padding: 11px 14px;
+  border: 2px solid #25233d;
+  border-radius: 12px;
+  background: #fffdf9 !important;
+  color: #20203a;
+  box-shadow: 0 4px 0 #25233d;
+  font-family: "Manrope", Arial, sans-serif;
+  font-size: 13px !important;
+  font-weight: 800;
+  letter-spacing: .3px;
+  text-transform: none;
+}
+
+#game-screen .ctrl-bar .btn {
+  border: 2px solid #25233d;
+  border-radius: 12px;
+  box-shadow: 0 4px 0 #25233d;
+  font-family: "Manrope", Arial, sans-serif;
+}
+
+/* Адаптация для небольших экранов */
+@media (max-width: 1050px) {
+  #game-screen .game-header {
+    padding: 26px 28px 0;
+  }
+
+  #game-screen .players-row {
+    position: static;
+    width: auto;
+    margin: 12px 28px 0;
+    padding-top: 47px;
+  }
+
+  #game-screen .board-wrap {
+    padding-top: 34px;
+  }
+
+  #game-screen .board-grid {
+    gap: 14px !important;
+    grid-auto-rows: 66px;
+  }
+
+  #game-screen .bcell {
+    border-radius: 14px;
+  }
+}
+
+@media (max-width: 700px) {
+  #game-screen {
+    overflow-x: auto;
+  }
+
+  #game-screen .board-grid {
+    width: 760px;
+    min-width: 760px;
+  }
+
+  #game-screen .players-row {
+    grid-template-columns: 1fr;
+  }
+
+  #game-screen .ctrl-bar .btn-gray[onclick="skipToFinal()"] {
+    position: static;
+  }
+}
+
+    /* Компактнее игровое поле — без вертикальной прокрутки */
+#game-screen .game-header {
+  padding-top: 22px !important;
+}
+
+#game-screen .players-row {
+  top: 20px !important;
+}
+
+#game-screen .board-wrap {
+  padding-top: 140px !important;
+  padding-bottom: 12px !important;
+}
+
+#game-screen .board-grid {
+  grid-auto-rows: 72px !important;
+  gap: 14px 28px !important;
+}
+
+#game-screen .bcell.head {
+  min-height: 68px !important;
+}
+
+#game-screen .ctrl-bar {
+  min-height: 48px !important;
+  padding: 7px 32px 12px !important;
+}
+
+    #game-screen .ctrl-bar .btn-gray[onclick="skipToFinal()"] {
+  font-family: "Manrope", Arial, sans-serif !important;
+}
+    /* Игроки: одна строка */
+#game-screen .players-row {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 14px !important;
+}
+
+#game-screen .player-badge {
+  flex: 0 0 auto !important;
+}
+    #game-screen .players-row {
+  transform: translateY(20px);
+}
+
 </style>
 </head>
 <body>
@@ -948,18 +1726,59 @@ body{font-family:Arial;background:#1a1a2e;color:white;min-height:100vh}
   </div>
 
 <!-- LOBBY -->
-<div id="lobby-screen" style="display:none;text-align:center;padding-top:25vh;background:#1a1a2e;position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;overflow-y:auto">
-  <p style="font-size:20px;color:white;margin-top:10px;font-weight:bold">КОД КОМНАТЫ:</p>
-  <h2 style="font-size:48px;letter-spacing:8px;margin:5px 0;color:#ff9800" id="rcodebig"></h2>
-  <p style="font-size:20px;color:white;margin-bottom:10px;font-weight:bold" id="lobby-ip"></p>
-  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0;padding:0 20px" id="player-slots">
-    <div class="player-slot" style="width:130px;height:80px;border:3px solid #1a1a2e;border-radius:12px;box-shadow:0 4px 8px rgba(0,0,0,0.5);background:#2a2a4a;display:flex;align-items:center;justify-content:center;color:#888;font-size:14px">Empty</div>
-    <div class="player-slot" style="width:130px;height:80px;border:3px solid #1a1a2e;border-radius:12px;box-shadow:0 4px 8px rgba(0,0,0,0.5);background:#2a2a4a;display:flex;align-items:center;justify-content:center;color:#888;font-size:14px">Empty</div>
-    <div class="player-slot" style="width:130px;height:80px;border:3px solid #1a1a2e;border-radius:12px;box-shadow:0 4px 8px rgba(0,0,0,0.5);background:#2a2a4a;display:flex;align-items:center;justify-content:center;color:#888;font-size:14px">Empty</div>
-    <div class="player-slot" style="width:130px;height:80px;border:3px solid #1a1a2e;border-radius:12px;box-shadow:0 4px 8px rgba(0,0,0,0.5);background:#2a2a4a;display:flex;align-items:center;justify-content:center;color:#888;font-size:14px">Empty</div>
-    <div class="player-slot" style="width:130px;height:80px;border:3px solid #1a1a2e;border-radius:12px;box-shadow:0 4px 8px rgba(0,0,0,0.5);background:#2a2a4a;display:flex;align-items:center;justify-content:center;color:#888;font-size:14px">Empty</div>
-  </div>
-  <button class="btn btn-green" id="btn-start-game" style="font-size:20px;padding:15px 40px;margin-top:20px;display:none" onclick="launchGame()">START GAME</button>
+<div id="lobby-screen" style="display:none">
+  <div class="lobby-orb lobby-orb-yellow"></div>
+  <div class="lobby-orb lobby-orb-blue"></div>
+
+  <main class="lobby-layout">
+    <section class="lobby-card">
+      <h1>Комната готова</h1>
+
+      <p class="lobby-description">
+        Отправь друзьям код — как только все подключатся, можно будет начинать
+      </p>
+
+      <div class="lobby-code-area">
+        <div class="lobby-code-label">Код комнаты</div>
+
+        <div id="rcodebig" class="lobby-code">------</div>
+
+        <button
+          type="button"
+          class="lobby-copy-button"
+          onclick="navigator.clipboard.writeText(document.getElementById('rcodebig').textContent)"
+        >
+          Скопировать код
+        </button>
+
+        <!-- Ссылка для игроков остаётся на экране -->
+        <p id="lobby-ip" class="lobby-link"></p>
+      </div>
+
+      <div class="lobby-players-title">
+        Участники · <span id="lobby-players-count">0</span> из 5
+      </div>
+
+      <!-- id и классы сохранены для текущего JS -->
+      <div id="player-slots" class="lobby-player-slots">
+        <div class="player-slot">Empty</div>
+        <div class="player-slot">Empty</div>
+        <div class="player-slot">Empty</div>
+        <div class="player-slot">Empty</div>
+        <div class="player-slot">Empty</div>
+      </div>
+    </section>
+
+    <!-- onclick не меняется: запуск игры остаётся прежним -->
+    <button
+      class="btn btn-green lobby-start-button"
+      id="btn-start-game"
+      type="button"
+      onclick="launchGame()"
+    >
+      Начать игру
+    </button>
+  </main>
 </div>
 
 <!-- GAME -->
@@ -974,7 +1793,7 @@ body{font-family:Arial;background:#1a1a2e;color:white;min-height:100vh}
 <button class="btn btn-green" id="btn-yes" style="display:none;font-size:18px" onclick="evalA(true)">+ Correct</button>
 <button class="btn btn-red" id="btn-no" style="display:none;font-size:18px" onclick="evalA(false)">- Wrong</button>
 <button class="btn btn-gray" id="btn-skip" style="display:none" onclick="skipQ()">Skip</button>
-<button class="btn btn-blue" id="btn-next" style="display:none;font-size:18px" onclick="nextR()">Next Round</button> <button class="btn btn-gray" style="font-size:12px" onclick="skipToFinal()">Skip to Final</button>
+<button class="btn btn-blue" id="btn-next" style="display:none;font-size:18px" onclick="nextR()">Next Round</button> <button class="btn btn-gray" style="font-size:12px" onclick="skipToFinal()">Перейти к финалу</button>
 </div>
 </div>
 
@@ -989,6 +1808,7 @@ body{font-family:Arial;background:#1a1a2e;color:white;min-height:100vh}
 
 <script>
 var T,prices=[[100,200,300,400,500],[200,400,600,800,1000],[300,600,900,1200,1500]],currentRound=0,roomCode,playerId,joined=false;
+var lastCorrectPlayerName = 'Ведущий';
 
 function showEditor(){document.getElementById('start-screen').style.display='none';document.getElementById('editor-screen').style.display='block'}
 function showStartScreen() {
@@ -1178,6 +1998,8 @@ function updateLobby(msg) {
   // ✅ Убеждаемся, что лобби видно
 document.getElementById('lobby-screen').style.display = 'block';
   if (roomCode) {
+    document.getElementById('lobby-players-count').textContent =
+    msg.players_count ?? Object.keys(msg.players || {}).length;
     document.getElementById('rcodebig').textContent = roomCode;
   }
 
@@ -1217,10 +2039,36 @@ function launchGame(){window.ws.send(JSON.stringify({type:"start_game"}));docume
 // ========== GAME RENDER ==========
 var _lastBoardHTML='';
 if(typeof _lastBoardHTML==='undefined'){window._lastBoardHTML='';}
-function renderGame(msg){ window._gameState = msg;
+function renderGame(msg){
+  window._gameState = msg;
   var game=msg.game,players=msg.players;
+/*
+  Если сервер прислал имя текущего отвечающего,
+  сохраняем его только при статусе answering.
+*/
+if (game.currentquestion &&
+    game.currentquestion.status === 'answering' &&
+    game.answeringname) {
+  window.lastAnsweringPlayerName = game.answeringname;
+}
+
+/*
+  После правильного ответа сервер может очистить answeringname.
+  Тогда используем последнее запомненное имя.
+*/
+const selectorName =
+  game.lastcorrectname ||
+  game.lastCorrectName ||
+  game.last_correct_name ||
+  lastCorrectPlayerName ||
+  'Ведущий';
+
+document.getElementById('gplayers').setAttribute(
+  'data-selector-name',
+  selectorName
+);
   if(game.phase==='final'){
-    document.getElementById('rname').textContent='FINAL ROUND';
+    document.getElementById('rname').textContent='Финал';
 
     if(!game._finalThemes) game._finalThemes = game.final.map(function(f,i){return {name:f.name||('Theme '+(i+1)), text:f.text, answer:f.answer, qmedia:f.qmedia, amedia:f.amedia, index:i, eliminated:false}});
     var activeThemes = game._finalThemes.filter(function(t){return !t.eliminated});
@@ -1243,8 +2091,8 @@ function renderGame(msg){ window._gameState = msg;
     return;
   }
   var round=game.rounds[game.current_round];
-  document.getElementById('rname').textContent=round.name+' ('+(game.current_round+1)+'/3)';
-  document.getElementById('hname-display').textContent=msg.host_name||'';
+document.getElementById('rname').textContent =
+  'Раунд ' + (game.current_round + 1);  document.getElementById('hname-display').textContent=msg.host_name||'';
   var ph='';for(var id in players){var p=players[id];if(p.is_host||p.name===msg.host_name)continue;ph+='<div class="player-badge" style="'+(p.online===false?'opacity:0.5':'')+'"><div class="pname">'+p.name+'</div><div class="pscore '+(p.score>=0?'plus':'minus')+'">'+p.score+'</div></div>'}
   document.getElementById('gplayers').innerHTML=ph;
   var bh='';for(var j=0;j<round.categories.length;j++)bh+='<div class="bcell head">'+round.categories[j]+'</div>';
@@ -1283,7 +2131,43 @@ function renderGame(msg){ window._gameState = msg;
 function selQ(cat,price){ws.send(JSON.stringify({type:'select_question',category:cat,price:price}))}
 function activateA(){window.ws.send(JSON.stringify({type:"open_question"}))} function evalA(correct){window.ws.send(JSON.stringify({type:"evaluate_answer",correct:correct}))} function activateA(){window.ws.send(JSON.stringify({type:"open_question"}))} function evalA(correct){window.ws.send(JSON.stringify({type:"evaluate_answer",correct:correct}))} function openQ(){ws.send(JSON.stringify({type:'open_question'}))}
 function activateA(){ws.send(JSON.stringify({type:'open_question'}))}
-function evalA(correct){ws.send(JSON.stringify({type:'evaluate_answer',correct:correct}))}
+function evalA(correct) {
+  /*
+    До отправки ответа сохраняем имя игрока,
+    который сейчас отвечал на вопрос.
+  */
+  if (correct) {
+    const game = window.gameState && window.gameState.game;
+
+    const answeringName =
+      (game && game.answeringname) ||
+      window.lastAnsweringPlayerName ||
+      '';
+
+    if (answeringName) {
+      lastCorrectPlayerName = answeringName;
+
+      const playersRow = document.getElementById('gplayers');
+      if (playersRow) {
+        playersRow.setAttribute(
+          'data-selector-name',
+          lastCorrectPlayerName
+        );
+      }
+    }
+  }
+
+  if (!window.ws || window.ws.readyState !== WebSocket.OPEN) {
+    console.error('WebSocket не подключён');
+    return;
+  }
+
+  /* Оставляем исходный формат сообщения вашему серверу */
+  window.ws.send(JSON.stringify({
+    type: 'evaluate_answer',
+    correct: correct
+  }));
+}
 function showAnswerInOverlay(){
   var ansHtml = '<span style="color:#ff9800;font-size:28px;font-weight:bold">'+window._currentAnswer+'</span>';
   if(window._currentAnswerMedia){
