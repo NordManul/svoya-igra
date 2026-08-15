@@ -1647,7 +1647,538 @@ body {
     #game-screen .players-row {
   transform: translateY(20px);
 }
+/* === Новый дизайн окна вопроса === */
+#overlay.question-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  padding: 42px 24px;
+  box-sizing: border-box;
+  background: #fff9ee;
+  isolation: isolate;
+}
 
+#overlay.question-overlay::before,
+#overlay.question-overlay::after {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+#overlay.question-overlay::before {
+  width: 310px;
+  height: 310px;
+  left: -78px;
+  bottom: -72px;
+  background: #d9f5df;
+}
+
+#overlay.question-overlay::after {
+  width: 270px;
+  height: 270px;
+  right: -64px;
+  top: 180px;
+  background: #eee4f8;
+}
+
+.question-overlay .overlay-box.question-card {
+  width: min(1220px, calc(100vw - 36px));
+  max-width: 1220px;
+  min-height: min(620px, calc(100vh - 36px));
+  max-height: calc(100vh - 36px);
+  padding: 30px 64px 26px;
+  min-height: 600px;
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 3px solid #303047;
+  border-radius: 26px;
+  background: #ffffff;
+  color: #17172b;
+  box-shadow: 0 7px 0 #55536a, 0 12px 22px rgba(43, 42, 66, 0.15);
+  text-align: center;
+}
+
+.question-overlay .overlay-box.question-card::after {
+  content: "✦";
+  position: fixed;
+  top: 46px;
+  right: 95px;
+  color: #f2a09c;
+  font-family: Arial, sans-serif;
+  font-size: 88px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.question-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: min(470px, 100%);
+  box-sizing: border-box;
+  min-height: 68px;
+  margin: 0 0 26px;
+  padding: 13px 28px;
+  border: 2px solid #303047;
+  border-radius: 18px;
+  background: #fff9ee;
+  color: #24243c;
+  font-size: clamp(22px, 2.5vw, 34px);
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.question-overlay #ov-text.q-text {
+  width: 100%;
+  margin: 0 0 22px;
+  color: #090914;
+  font-size: clamp(25px, 3vw, 38px);
+  font-weight: 800;
+  line-height: 1.18;
+}
+
+.question-overlay #ov-media {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  margin: 0 0 22px;
+}
+
+.question-overlay #ov-media img {
+  display: block;
+  max-width: min(100%, 440px) !important;
+  max-height: 310px !important;
+  border-radius: 12px !important;
+  object-fit: contain;
+}
+
+.question-overlay #ov-media audio {
+  width: min(100%, 440px) !important;
+}
+
+.question-overlay #ov-answerer {
+  margin: 0 0 18px !important;
+  color: #ef8a39 !important;
+  font-size: 24px !important;
+}
+
+.question-overlay #ov-btns {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  gap: 18px !important;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+.question-overlay .question-action,
+.question-overlay .question-close {
+  min-width: 226px;
+  padding: 15px 24px !important;
+  border: 2px solid #303047 !important;
+  border-radius: 18px !important;
+  box-shadow: 0 5px 0 #303047 !important;
+  color: #25243b !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transform: translateY(0);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.question-overlay .question-action:hover,
+.question-overlay .question-close:hover {
+  filter: brightness(0.98);
+  transform: translateY(2px);
+  box-shadow: 0 3px 0 #303047 !important;
+}
+
+.question-overlay .question-action:active,
+.question-overlay .question-close:active {
+  transform: translateY(5px);
+  box-shadow: none !important;
+}
+
+.question-overlay .question-activate,
+.question-overlay .question-show-answer {
+  background: #ffe38f !important;
+}
+
+.question-overlay .question-correct {
+  background: #bdebd2 !important;
+}
+
+.question-overlay .question-wrong,
+.question-overlay .question-finish {
+  background: #f7b0aa !important;
+}
+
+.question-overlay .question-close {
+  margin-top: 18px !important;
+  background: #aee1ff !important;
+}
+
+@media (max-width: 640px) {
+  #overlay.question-overlay {
+    padding: 22px 14px;
+  }
+
+  .question-overlay .overlay-box.question-card {
+    min-height: 0;
+    padding: 24px 18px;
+    border-radius: 20px;
+  }
+
+  .question-badge {
+    min-height: 54px;
+    margin-bottom: 20px;
+    padding: 10px 16px;
+    border-radius: 14px;
+  }
+
+  .question-overlay .overlay-box.question-card::after {
+    display: none;
+  }
+
+  .question-overlay .question-action,
+  .question-overlay .question-close {
+    width: 100%;
+    min-width: 0;
+  }
+}
+    /* Более широкое окно вопроса */
+.question-overlay .overlay-box.question-card {
+  width: min(1000px, 100%);
+  max-width: 1000px;
+}
+
+/* Зелёная кнопка «Показать ответ» */
+.question-overlay .question-show-answer {
+  background: #d9ccff !important;
+}
+    /* Три кнопки действий на одной линии */
+.question-overlay #ov-btns {
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 14px !important;
+}
+
+.question-overlay #ov-btns .question-action {
+  flex: 1 1 0;
+  min-width: 0;
+  white-space: nowrap;
+  padding: 15px 18px !important;
+}
+
+/* Увеличенное изображение вопроса */
+.question-overlay #ov-media img {
+  width: min(100%, 680px) !important;
+  max-width: 680px !important;
+  max-height: 430px !important;
+  height: auto;
+  object-fit: contain;
+}
+
+/* На узких экранах кнопки остаются удобными для нажатия */
+@media (max-width: 760px) {
+  .question-overlay #ov-btns {
+    flex-wrap: wrap;
+  }
+
+  .question-overlay #ov-btns .question-action {
+    flex: 1 1 100%;
+  }
+
+  .question-overlay #ov-media img {
+    max-width: 100% !important;
+    max-height: 360px !important;
+  }
+}
+    /* Окно вопроса помещается на экран без прокрутки */
+#overlay.question-overlay {
+  overflow: hidden;
+  padding: 18px;
+}
+
+.question-overlay .overlay-box.question-card {
+  width: min(1040px, calc(100vw - 36px));
+  min-height: 0;
+  max-height: calc(100vh - 36px);
+  padding: 20px 38px 18px;
+  overflow: hidden;
+}
+
+/* Компактный бейдж темы и стоимости */
+.question-badge {
+  min-height: 48px;
+  margin-bottom: 14px;
+  padding: 8px 22px;
+  font-size: clamp(19px, 2vw, 27px);
+}
+
+/* Компактный текст вопроса */
+.question-overlay #ov-text.q-text {
+  margin-bottom: 14px;
+  font-size: clamp(21px, 2.2vw, 31px);
+  line-height: 1.12;
+}
+
+/* Крупное, но ограниченное по высоте изображение */
+.question-overlay #ov-media {
+  margin-bottom: 14px;
+}
+
+.question-overlay #ov-media img {
+  width: auto !important;
+  max-width: min(100%, 600px) !important;
+  max-height: min(36vh, 310px) !important;
+  height: auto !important;
+  object-fit: contain;
+}
+
+/* Компактная строка кнопок */
+.question-overlay #ov-btns {
+  flex-wrap: nowrap;
+  gap: 12px !important;
+  margin-top: 0;
+}
+
+.question-overlay #ov-btns .question-action,
+.question-overlay .question-close {
+  min-width: 0;
+  min-height: 46px;
+  padding: 11px 16px !important;
+  font-size: 14px !important;
+  letter-spacing: 0.03em;
+}
+
+.question-overlay #ov-btns .question-action {
+  flex: 1 1 0;
+  white-space: nowrap;
+}
+
+/* Кнопка возврата также идёт в строке с действиями */
+.question-overlay .question-close {
+  margin-top: 0 !important;
+}
+
+@media (max-height: 700px) {
+  .question-overlay .overlay-box.question-card {
+    padding: 14px 28px;
+  }
+
+  .question-badge {
+    min-height: 40px;
+    margin-bottom: 10px;
+    font-size: 19px;
+  }
+
+  .question-overlay #ov-text.q-text {
+    margin-bottom: 10px;
+    font-size: 22px;
+  }
+
+  .question-overlay #ov-media {
+    margin-bottom: 10px;
+  }
+
+  .question-overlay #ov-media img {
+    max-height: 28vh !important;
+  }
+
+  .question-overlay #ov-btns .question-action,
+  .question-overlay .question-close {
+    min-height: 40px;
+    padding: 8px 13px !important;
+    font-size: 12px !important;
+  }
+}
+    /* Чуть более крупное окно вопроса */
+.question-overlay .overlay-box.question-card {
+  width: min(1140px, calc(100vw - 36px));
+  max-width: 1140px;
+  padding: 24px 46px 20px;
+}
+
+/* Кнопки занимают ширину по тексту */
+.question-overlay #ov-btns {
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 14px !important;
+}
+
+.question-overlay #ov-btns .question-action,
+.question-overlay #ov-btns .question-close {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 0;
+  white-space: nowrap;
+  padding: 11px 20px !important;
+}
+
+/* Если кнопка возврата пока находится за пределами #ov-btns */
+.question-overlay .question-close {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 0;
+  white-space: nowrap;
+  padding: 11px 20px !important;
+}
+    /* Увеличенное окно вопроса и больше пространства внутри */
+.question-overlay .overlay-box.question-card {
+  width: min(1100px, calc(100vw - 36px));
+  max-width: 1100px;
+  padding: 30px 64px 26px;
+}
+
+/* Шире бейдж темы */
+.question-badge {
+  min-width: min(570px, 100%);
+  padding: 11px 32px;
+}
+
+/* Чуть просторнее область вопроса */
+.question-overlay #ov-text.q-text {
+  max-width: 1020px;
+  margin-bottom: 18px;
+}
+
+/* Увеличенное изображение, без выхода за экран */
+.question-overlay #ov-media img {
+  max-width: min(100%, 720px) !important;
+  max-height: min(38vh, 350px) !important;
+}
+
+/* Больше пространства между кнопками */
+.question-overlay #ov-btns {
+  gap: 18px !important;
+}
+    .question-overlay #ov-btns .question-correct,
+.question-overlay #ov-btns .question-wrong {
+  width: 150px;
+  min-width: 150px;
+  height: 46px;
+  box-sizing: border-box;
+}
+
+    /* Состояние: игрок отвечает на вопрос */
+.question-overlay .overlay-box.question-card {
+  justify-content: flex-start;
+}
+
+/* Таймер, если он есть в текущей разметке */
+.question-overlay .question-timer {
+  margin: 28px 0 38px;
+  color: #292746;
+  font-size: clamp(40px, 5vw, 58px);
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* Контейнер кнопки «Показать ответ» и результата */
+.question-overlay #ov-btns {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0 !important;
+}
+
+/* Центральная кнопка ответа */
+.question-overlay #ov-btns > .question-show-answer {
+  flex: 0 0 auto;
+  width: auto;
+  margin: 22px 0 54px;
+  padding: 14px 24px !important;
+  background: #ffe38f !important;
+}
+
+/* Нижняя строка оценки */
+.question-overlay .answer-evaluation-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 118px;
+  width: 100%;
+}
+
+/* Одинаковый размер зелёной и красной кнопки */
+.question-overlay .answer-evaluation-row .question-correct,
+.question-overlay .answer-evaluation-row .question-wrong {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 300px;
+  min-width: 300px;
+  height: 68px;
+  box-sizing: border-box;
+  padding: 12px 22px !important;
+  font-size: 20px !important;
+  letter-spacing: 0.12em;
+}
+
+/* Цвета как на примере */
+.question-overlay .answer-evaluation-row .question-correct {
+  background: #bcefd8 !important;
+  color: #167b62 !important;
+}
+
+.question-overlay .answer-evaluation-row .question-wrong {
+  background: #ffc5b7 !important;
+  color: #df625b !important;
+}
+
+/* На небольших экранах не допускаем горизонтального выхода */
+@media (max-width: 760px) {
+  .question-overlay .answer-evaluation-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .question-overlay .answer-evaluation-row .question-correct,
+  .question-overlay .answer-evaluation-row .question-wrong {
+    width: min(300px, 100%);
+    min-width: 0;
+  }
+
+  .question-overlay #ov-btns > .question-show-answer {
+    margin-bottom: 28px;
+  }
+}
+
+    /* Рамка имени отвечающего */
+.question-overlay .answerer-badge {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-width: min(570px, 100%);
+  min-height: 68px;
+  margin: 0 0 22px;
+  padding: 12px 32px;
+  box-sizing: border-box;
+  border: 2px solid #303047;
+  border-radius: 18px;
+  background: #fff9ee;
+  color: #24243c;
+  font-size: clamp(22px, 2.5vw, 34px);
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+    /* Поднять строку «Верно / Неверно» выше */
+.question-overlay .answer-evaluation-row {
+  margin-top: -35px;
+}
 </style>
 </head>
 <body>
@@ -2046,10 +2577,10 @@ function renderGame(msg){
   Если сервер прислал имя текущего отвечающего,
   сохраняем его только при статусе answering.
 */
-if (game.currentquestion &&
-    game.currentquestion.status === 'answering' &&
-    game.answeringname) {
-  window.lastAnsweringPlayerName = game.answeringname;
+if (game.current_question &&
+    game.current_question.status === 'answering' &&
+    game.answering_name) {
+  window.lastAnsweringPlayerName = game.answering_name;
 }
 
 /*
@@ -2101,28 +2632,151 @@ document.getElementById('rname').textContent =
   if(bh!==window._lastBoardHTML){document.getElementById('gboard').innerHTML=bh;window._lastBoardHTML=bh;}
 
   var q=game.current_question;
-  if(q){
-    document.getElementById('ov-theme').style.display='none';
-    document.getElementById('ov-price').style.display='none';
-    document.getElementById('ov-text').textContent=q.question.text||'';
-    console.log('Q media:', q.question.qmedia, 'type:', q.question.qmediatype); var mh='';if(q.question.qmedia){if(q.question.qmediatype==='audio')mh+='<audio controls src="'+q.question.qmedia+'" style="width:100%;max-width:400px"></audio>';else mh+='<img src="'+q.question.qmedia+'" style="max-width:400px;max-height:300px;border-radius:10px">';}
-    document.getElementById('ov-media').innerHTML=mh;
-    document.getElementById('ov-answerer').textContent=game.answering_name&&game.answering_name!==''?'ANSWERING: '+game.answering_name:''; document.getElementById('ov-answerer').style.display=game.answering_name&&game.answering_name!==''?'block':'none';
+  if (q) {
+  const overlay = document.getElementById('overlay');
+  const question = q.question || {};
+  const theme = q.category || question.category || 'Тема';
+  const price = q.price || question.price || '';
 
-    var btns='';
-    if(q.status==='selected'||q.status==='open') btns+='<button class="btn btn-orange" onclick="activateA()" style="font-size:18px;padding:12px 30px;margin:5px">ACTIVATE ANSWER</button> ';
-    if(q.status==='answering'){ btns+='<button class="btn btn-green" onclick="evalA(true)" style="font-size:18px;padding:12px 30px;margin:5px">+ CORRECT</button> '; btns+='<button class="btn btn-red" onclick="evalA(false)" style="font-size:18px;padding:12px 30px;margin:5px">- WRONG</button> '; }
-    if(q.status==='answered'){ btns+='<button class="btn btn-gray" onclick="skipQ()" style="font-size:18px;padding:12px 30px;margin:5px">FINISH</button> '; showAnswerInOverlay(); }
-    btns+='<button class="btn btn-orange" onclick="showAnswerInOverlay()" style="font-size:18px;padding:12px 30px;margin:5px">SHOW ANSWER</button> ';
-    btns+='<button class="btn btn-gray" onclick="skipQ()" style="font-size:18px;padding:12px 30px;margin:5px">FINISH</button>';
-    document.getElementById('ov-btns').innerHTML=btns;
+  overlay.classList.add('question-overlay');
+  overlay.innerHTML = `
+    <div class="overlay-box question-card">
+      <div class="question-badge">${theme}${price ? ' · ' + price : ''}</div>
 
-    window._currentAnswer = q.question.answer||''; window._currentAnswerMedia = q.question.amedia?{url:q.question.amedia, type:q.question.amediatype||'image'}:null; window._currentAnswerMediatype = q.question.amediatype||'';
+      <div class="q-text" id="ov-text"></div>
+      <div id="ov-media"></div>
+      <div id="ov-answerer" class="answerer-badge"></div>
+      <div id="ov-btns">
+  <button
+    class="btn question-close"
+    type="button"
+    onclick="document.getElementById('overlay').style.display='none'"
+  >
+    Вернуться к полю
+  </button>
+</div>
+  `;
 
-    document.getElementById('overlay').style.display='flex';
-  }else{
-    document.getElementById('overlay').style.display='none';
+  document.getElementById('ov-text').textContent = question.text || '';
+
+  let mediaHtml = '';
+  if (question.qmedia) {
+    if (question.qmediatype === 'audio') {
+      mediaHtml = `<audio controls src="${question.qmedia}"></audio>`;
+    } else {
+      mediaHtml = `<img src="${question.qmedia}" alt="Изображение к вопросу">`;
+    }
   }
+  document.getElementById('ov-media').innerHTML = mediaHtml;
+
+ const answerer = document.getElementById('ov-answerer');
+
+if (q.status === 'answering' && game.answering_name) {
+  answerer.textContent = `Отвечает: ${game.answering_name}`;
+  answerer.style.display = 'inline-flex';
+} else {
+  answerer.textContent = '';
+  answerer.style.display = 'none';
+}
+
+  let buttons = '';
+
+  if (q.status === 'selected' || q.status === 'open') {
+    buttons += `
+      <button
+        class="btn question-action question-activate"
+        type="button"
+        onclick="activateA()"
+      >
+        Активировать вопрос
+      </button>
+    `;
+  }
+
+  if (q.status === 'answering') {
+  buttons += `
+    <button
+      class="btn question-action question-show-answer"
+      type="button"
+      onclick="showAnswerInOverlay()"
+    >
+      Показать ответ
+    </button>
+  `;
+const questionPrice = q.price || question.price || '';
+  buttons += `
+    <div class="answer-evaluation-row">
+      <button
+        class="btn question-action question-correct"
+        type="button"
+        onclick="evalA(true)"
+      >
+        Верно&nbsp;&nbsp;+${questionPrice}
+      </button>
+
+      <button
+        class="btn question-action question-wrong"
+        type="button"
+        onclick="evalA(false)"
+      >
+        Неверно&nbsp;&nbsp;−${questionPrice}
+      </button>
+    </div>
+  `;
+}
+
+  if (q.status === 'answered') {
+    buttons += `
+      <button
+        class="btn question-action question-finish"
+        type="button"
+        onclick="skipQ()"
+      >
+        Завершить
+      </button>
+    `;
+  }
+
+  if (
+  q.status !== 'answering' &&
+  typeof showAnswerInOverlay === 'function'
+) {
+  buttons += `
+    <button
+      class="btn question-action question-show-answer"
+      type="button"
+      onclick="showAnswerInOverlay()"
+    >
+      Показать ответ
+    </button>
+  `;
+}
+
+document.getElementById('ov-btns').innerHTML = `
+  ${buttons}
+  <button
+    class="btn question-close"
+    type="button"
+    onclick="document.getElementById('overlay').style.display='none'"
+  >
+    Вернуться к полю
+  </button>
+`;
+  window.currentAnswer = question.answer;
+  window.currentAnswerMedia = question.amedia
+    ? {
+        url: question.amedia,
+        type: question.amediatype || 'image'
+      }
+    : null;
+
+  window.currentAnswerMediatype = question.amediatype;
+
+  overlay.style.display = 'flex';
+} else {
+  document.getElementById('overlay').classList.remove('question-overlay');
+  document.getElementById('overlay').style.display = 'none';
+}
 
   // РќРёР¶РЅСЏСЏ РїР°РЅРµР»СЊ вЂ” С‚РѕР»СЊРєРѕ РєРЅРѕРїРєР° Next Round
   document.getElementById('btn-next').style.display=!q&&!Object.keys(round.questions).length&&game.phase==='playing'?'inline-block':'none';
@@ -2140,7 +2794,7 @@ function evalA(correct) {
     const game = window.gameState && window.gameState.game;
 
     const answeringName =
-      (game && game.answeringname) ||
+      (game && game.answering_name) ||
       window.lastAnsweringPlayerName ||
       '';
 
@@ -2168,15 +2822,45 @@ function evalA(correct) {
     correct: correct
   }));
 }
-function showAnswerInOverlay(){
-  var ansHtml = '<span style="color:#ff9800;font-size:28px;font-weight:bold">'+window._currentAnswer+'</span>';
-  if(window._currentAnswerMedia){
-    if(window._currentAnswerMediatype==='audio') ansHtml += '<br><audio controls src="'+window._currentAnswerMedia.url+'" style="width:100%;max-width:400px;margin-top:15px"></audio>';
-    else ansHtml += '<br><img src="'+window._currentAnswerMedia.url+'" style="max-width:400px;max-height:300px;border-radius:10px;margin-top:15px">';
+function showAnswerInOverlay() {
+  const answerText = window.currentAnswer || '';
+  let answerHtml = `<span class="question-answer-text">${answerText}</span>`;
+
+  if (window.currentAnswerMedia) {
+    if (window.currentAnswerMediatype === 'audio') {
+      answerHtml += `
+        <br>
+        <audio
+          controls
+          src="${window.currentAnswerMedia.url}"
+          style="width:100%;max-width:400px;margin-top:15px"
+        ></audio>
+      `;
+    } else {
+      answerHtml += `
+        <br>
+        <img
+          src="${window.currentAnswerMedia.url}"
+          alt="Материал к ответу"
+          style="max-width:400px;max-height:300px;border-radius:10px;margin-top:15px"
+        >
+      `;
+    }
   }
-  document.getElementById('ov-text').innerHTML = ansHtml;
+
+  document.getElementById('ov-text').innerHTML = answerHtml;
   document.getElementById('ov-media').innerHTML = '';
-  document.getElementById('ov-btns').innerHTML = '<button class="btn btn-red" onclick="skipQ()" style="font-size:18px;padding:12px 30px">FINISH</button>';
+  document.getElementById('ov-answerer').style.display = 'none';
+
+  document.getElementById('ov-btns').innerHTML = `
+    <button
+      class="btn question-action question-finish"
+      type="button"
+      onclick="skipQ()"
+    >
+      Завершить
+    </button>
+  `;
 }
 function skipQ(){ws.send(JSON.stringify({type:'skip_question'}))}
 function eliminateTheme(idx){
