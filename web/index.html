@@ -2179,6 +2179,347 @@ body {
 .question-overlay .answer-evaluation-row {
   margin-top: -35px;
 }
+    /* Кнопка «Показать ответ» */
+.question-overlay .question-show-answer {
+  background: #d9ccff !important;
+}
+
+/* Поднять «Верно / Неверно» и отделить от возврата */
+.question-overlay .answer-evaluation-row {
+  margin-top: -30px !important;
+  margin-bottom: 26px !important;
+}
+
+/* Кнопка возврата всегда остаётся ниже кнопок оценки */
+.question-overlay #ov-btns > .question-close {
+  margin-top: 0 !important;
+}
+
+    /* Сдвигает всю группу кнопок вопроса выше */
+.question-overlay #ov-btns {
+  margin-top: auto !important;
+  transform: translateY(-26px);
+}
+
+/* Цвет кнопки «Показать ответ» — правило должно быть последним */
+.question-overlay #ov-btns .question-show-answer {
+  background: #d9ccff !important;
+}
+
+/* Чтобы отступ до «Вернуться к полю» сохранялся */
+.question-overlay #ov-btns .answer-evaluation-row {
+  margin-bottom: 26px !important;
+}
+
+    /* Карточка рассчитывает высоту по экрану */
+.question-overlay .overlay-box.question-card {
+  height: min(620px, calc(100vh - 36px)) !important;
+  min-height: 0 !important;
+  max-height: calc(100vh - 36px) !important;
+  overflow: hidden !important;
+}
+
+/* Картинка никогда не занимает пространство кнопок */
+.question-overlay #ov-media {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0 12px !important;
+}
+
+.question-overlay #ov-media img {
+  max-width: min(100%, 620px) !important;
+  max-height: min(26vh, 240px) !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain;
+}
+
+/* Общий контейнер действий: без сдвига поверх картинки */
+.question-overlay #ov-btns {
+  flex: 0 0 auto;
+  width: 100%;
+  margin-top: 0 !important;
+  transform: none !important;
+  gap: 12px !important;
+}
+
+/* Экран до ответа: «Активировать», «Показать», «Вернуться» */
+.question-overlay #ov-btns > .question-action,
+.question-overlay #ov-btns > .question-close {
+  flex: 0 0 auto !important;
+  min-height: 42px;
+  padding: 9px 16px !important;
+  font-size: 13px !important;
+}
+
+/* Экран оценки: «Показать» + «Верно / Неверно» + «Вернуться» */
+.question-overlay #ov-btns .question-show-answer {
+  margin: 0 0 12px !important;
+  background: #d9ccff !important;
+}
+
+.question-overlay #ov-btns .answer-evaluation-row {
+  flex: 0 0 auto;
+  gap: 40px !important;
+  margin: 0 0 12px !important;
+}
+
+.question-overlay #ov-btns .answer-evaluation-row .question-correct,
+.question-overlay #ov-btns .answer-evaluation-row .question-wrong {
+  width: 230px;
+  min-width: 230px;
+  height: 48px;
+  padding: 9px 16px !important;
+  font-size: 16px !important;
+}
+
+/* Маленькая высота ноутбука: всё остаётся внутри */
+@media (max-height: 700px) {
+  .question-overlay .overlay-box.question-card {
+    height: calc(100vh - 28px) !important;
+    padding: 16px 28px !important;
+  }
+
+  .question-overlay #ov-media img {
+    max-height: min(20vh, 170px) !important;
+  }
+
+  .question-overlay #ov-btns > .question-action,
+  .question-overlay #ov-btns > .question-close {
+    min-height: 38px;
+    padding: 7px 13px !important;
+    font-size: 12px !important;
+  }
+
+  .question-overlay #ov-btns .answer-evaluation-row {
+    gap: 26px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .question-overlay #ov-btns .answer-evaluation-row .question-correct,
+  .question-overlay #ov-btns .answer-evaluation-row .question-wrong {
+    width: 200px;
+    min-width: 200px;
+    height: 40px;
+    font-size: 13px !important;
+  }
+}
+
+  /* Увеличенное окно, почти на всю доступную высоту */
+.question-overlay .overlay-box.question-card {
+  width: min(1280px, calc(100vw - 36px)) !important;
+  max-width: 1280px !important;
+
+  height: calc(100vh - 24px) !important;
+  max-height: calc(100vh - 24px) !important;
+
+  padding: 24px 64px 20px !important;
+}
+    /* Каждый блок занимает собственное место */
+.question-overlay .question-badge {
+  flex: 0 0 auto;
+  margin-bottom: 12px !important;
+}
+
+.question-overlay .answerer-badge {
+  flex: 0 0 auto;
+  margin: 0 0 16px !important;
+}
+
+.question-overlay #ov-text {
+  flex: 0 0 auto;
+  margin: 0 0 16px !important;
+}
+
+.question-overlay #ov-media {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0 0 14px !important;
+}
+
+.question-overlay #ov-media img {
+  max-height: min(32vh, 300px) !important;
+}
+
+    /* Чуть крупнее все кнопки на экране вопроса */
+.question-overlay #ov-btns > .question-action,
+.question-overlay #ov-btns > .question-close {
+  min-height: 48px;
+  padding: 11px 20px !important;
+  font-size: 15px !important;
+}
+
+/* Чуть крупнее кнопки «Верно» и «Неверно» */
+.question-overlay #ov-btns .answer-evaluation-row .question-correct,
+.question-overlay #ov-btns .answer-evaluation-row .question-wrong {
+  width: 255px;
+  min-width: 255px;
+  height: 54px;
+  padding: 11px 20px !important;
+  font-size: 17px !important;
+}
+
+/* Больше расстояние между зелёной и красной кнопками */
+.question-overlay #ov-btns .answer-evaluation-row {
+  gap: 48px !important;
+}
+
+/* Прикреплённая картинка чуть крупнее */
+.question-overlay #ov-media img {
+  max-width: min(100%, 780px) !important;
+  max-height: min(40vh, 400px) !important;
+}
+
+    /* Центрирование содержимого карточки вопроса */
+.question-overlay .overlay-box.question-card {
+  justify-content: flex-start !important;
+  align-items: center !important;
+}
+
+.question-overlay .question-badge {
+  align-self: center;
+  margin-top: 0 !important;
+}
+
+/* Медиа не растягивает свободное пространство и остаётся в центре */
+.question-overlay #ov-media {
+  flex: 0 1 auto !important;
+  width: 100%;
+  justify-content: center;
+}
+
+/* Кнопки остаются частью общего центрированного блока */
+.question-overlay #ov-btns {
+  margin-top: 0 !important;
+  align-items: center !important;
+}
+
+    /* Вопрос без картинки: кнопки находятся в центре свободной области */
+.question-overlay .question-card.no-question-media #ov-btns {
+  flex: 1 1 auto !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: stretch;
+}
+    /* Увеличенные кнопки в окнах вопросов */
+.question-overlay #ov-btns > .question-action,
+.question-overlay #ov-btns > .question-close {
+  min-height: 56px;
+  padding: 13px 26px !important;
+  font-size: 17px !important;
+}
+
+/* Увеличенные «Верно / Неверно» */
+.question-overlay #ov-btns .answer-evaluation-row .question-correct,
+.question-overlay #ov-btns .answer-evaluation-row .question-wrong {
+  width: 285px;
+  min-width: 285px;
+  height: 62px;
+  padding: 13px 24px !important;
+  font-size: 19px !important;
+}
+
+.question-overlay #ov-btns .answer-evaluation-row {
+  gap: 56px !important;
+}
+
+    /* Ссылка для повторного подключения игрока */
+.game-screen .game-header {
+  position: relative;
+}
+
+/* Код комнаты на уровне «Раунд» и «Выбирает» */
+#game-join-link.game-join-link {
+  position: fixed !important;
+  top: 34px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+
+  z-index: 10000 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 300px;
+  min-height: 58px;
+  box-sizing: border-box;
+  padding: 12px 26px;
+  letter-spacing: 0.5px;
+
+  border: 2px solid #25233d !important;
+  border-radius: 14px;
+  background: #eee4f7 !important;
+  color: #20203a !important;
+  box-shadow: 0 3px 0 #25233d !important;
+
+  font-family: Manrope, Arial, sans-serif !important;
+  font-size: 21px !important;
+  font-weight: 900 !important;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+}
+
+    /* Изображение после «Показать ответ» — того же крупного размера */
+.question-overlay .question-answer-media {
+  display: block;
+  width: auto;
+  max-width: min(100%, 780px) !important;
+  max-height: min(40vh, 400px) !important;
+  height: auto;
+  margin: 15px auto 0;
+  border-radius: 12px;
+  object-fit: contain;
+}
+
+    /* Контейнер мышек: растягиваем на всю ширину нижней части окна */
+.question-overlay .answer-revealed #ov-media {
+  position: absolute;
+  right: 36px;
+  bottom: 28px;
+  left: 36px;
+
+  display: flex !important;
+  align-items: flex-end;
+  justify-content: space-between !important;
+
+  width: auto !important;
+  height: 170px;
+  margin: 0 !important;
+  pointer-events: none;
+}
+
+/* Размер каждой мышки */
+.question-overlay .answer-revealed #ov-media .answer-mouse {
+  display: block;
+  width: 280px !important;
+  max-width: 280px !important;
+  max-height: none !important;
+  height: auto !important;
+  margin: 0 !important;
+  object-fit: contain;
+}
+
+/* Правая мышка отзеркалена */
+.question-overlay .answer-revealed #ov-media .answer-mouse-right {
+  transform: scaleX(-1) !important;
+}
+
+  /* Опустить блок правильного ответа, сохранив место для изображения */
+.question-overlay .answer-revealed #ov-text {
+  margin-top: 32px !important;
+  margin-bottom: 0 !important;
+}
+
+    /* Отступ между изображением правильного ответа и кнопками */
+.question-overlay .answer-revealed #ov-text:has(.question-answer-media) {
+  margin-bottom: 30px !important;
+}
 </style>
 </head>
 <body>
@@ -2314,7 +2655,7 @@ body {
 
 <!-- GAME -->
 <div id="game-screen">
-<div class="game-header"><h2 id="rname"></h2><span style="font-size:18px;color:white">Room: <b id="game-room-code"></b></span><span>Host: <b id="hname-display"></b></span></div>
+<div class="game-header"><h2 id="rname"></h2><div id="game-join-link" class="game-join-link"></div><span style="font-size:18px;color:white">Room: <b id="game-room-code"></b></span><span>Host: <b id="hname-display"></b></span></div>
 <div class="players-row" id="gplayers"></div>
 <div class="board-wrap"><div class="board-grid" id="gboard"></div></div>
 <div class="ctrl-bar">
@@ -2624,6 +2965,12 @@ document.getElementById('gplayers').setAttribute(
   var round=game.rounds[game.current_round];
 document.getElementById('rname').textContent =
   'Раунд ' + (game.current_round + 1);  document.getElementById('hname-display').textContent=msg.host_name||'';
+  const gameJoinLink = document.getElementById('game-join-link');
+
+if (gameJoinLink) {
+  gameJoinLink.textContent = `Код комнаты: ${roomCode}`;
+  gameJoinLink.style.display = 'flex';
+}
   var ph='';for(var id in players){var p=players[id];if(p.is_host||p.name===msg.host_name)continue;ph+='<div class="player-badge" style="'+(p.online===false?'opacity:0.5':'')+'"><div class="pname">'+p.name+'</div><div class="pscore '+(p.score>=0?'plus':'minus')+'">'+p.score+'</div></div>'}
   document.getElementById('gplayers').innerHTML=ph;
   var bh='';for(var j=0;j<round.categories.length;j++)bh+='<div class="bcell head">'+round.categories[j]+'</div>';
@@ -2643,17 +2990,12 @@ document.getElementById('rname').textContent =
     <div class="overlay-box question-card">
       <div class="question-badge">${theme}${price ? ' · ' + price : ''}</div>
 
-      <div class="q-text" id="ov-text"></div>
-      <div id="ov-media"></div>
-      <div id="ov-answerer" class="answerer-badge"></div>
-      <div id="ov-btns">
-  <button
-    class="btn question-close"
-    type="button"
-    onclick="document.getElementById('overlay').style.display='none'"
-  >
-    Вернуться к полю
-  </button>
+<div id="ov-answerer" class="answerer-badge"></div>
+
+<div class="q-text" id="ov-text"></div>
+<div id="ov-media"></div>
+
+<div id="ov-btns"></div>
 </div>
   `;
 
@@ -2668,6 +3010,18 @@ document.getElementById('rname').textContent =
     }
   }
   document.getElementById('ov-media').innerHTML = mediaHtml;
+
+  const media = document.getElementById('ov-media');
+
+if (question.qmedia) {
+  media.style.display = 'flex';
+} else {
+  media.style.display = 'none';
+}
+
+overlay
+  .querySelector('.question-card')
+  .classList.toggle('no-question-media', !question.qmedia);
 
  const answerer = document.getElementById('ov-answerer');
 
@@ -2755,12 +3109,15 @@ const questionPrice = q.price || question.price || '';
 document.getElementById('ov-btns').innerHTML = `
   ${buttons}
   <button
-    class="btn question-close"
-    type="button"
-    onclick="document.getElementById('overlay').style.display='none'"
-  >
-    Вернуться к полю
-  </button>
+  class="btn question-close"
+  type="button"
+  onclick="
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('game-join-link').style.display = 'flex';
+  "
+>
+  Вернуться к полю
+</button>
 `;
   window.currentAnswer = question.answer;
   window.currentAnswerMedia = question.amedia
@@ -2771,10 +3128,19 @@ document.getElementById('ov-btns').innerHTML = `
     : null;
 
   window.currentAnswerMediatype = question.amediatype;
+const gameJoinLink = document.getElementById('game-join-link');
 
+if (gameJoinLink) {
+  gameJoinLink.style.display = 'none';
+}
   overlay.style.display = 'flex';
 } else {
   document.getElementById('overlay').classList.remove('question-overlay');
+  const gameJoinLink = document.getElementById('game-join-link');
+
+if (gameJoinLink) {
+  gameJoinLink.style.display = 'flex';
+}
   document.getElementById('overlay').style.display = 'none';
 }
 
@@ -2823,42 +3189,92 @@ function evalA(correct) {
   }));
 }
 function showAnswerInOverlay() {
-  const answerText = window.currentAnswer || '';
-  let answerHtml = `<span class="question-answer-text">${answerText}</span>`;
+  const overlay = document.getElementById('overlay');
+  const card = overlay.querySelector('.question-card');
+  const answerer = document.getElementById('ov-answerer');
+  const text = document.getElementById('ov-text');
+  const media = document.getElementById('ov-media');
+  const buttons = document.getElementById('ov-btns');
+
+  card.classList.add('answer-revealed');
+
+  const answeringName =
+    window.gameState?.game?.answeringname ||
+    window.lastAnsweringPlayerName ||
+    '';
+
+  if (answeringName) {
+    answerer.textContent = `Отвечает: ${answeringName}`;
+    answerer.style.display = 'inline-flex';
+  } else {
+    answerer.textContent = '';
+    answerer.style.display = 'none';
+  }
+
+  let answerMedia = '';
 
   if (window.currentAnswerMedia) {
     if (window.currentAnswerMediatype === 'audio') {
-      answerHtml += `
-        <br>
+      answerMedia = `
         <audio
+          class="question-answer-audio"
           controls
           src="${window.currentAnswerMedia.url}"
-          style="width:100%;max-width:400px;margin-top:15px"
         ></audio>
       `;
     } else {
-      answerHtml += `
-        <br>
+      answerMedia = `
         <img
+          class="question-answer-media"
           src="${window.currentAnswerMedia.url}"
-          alt="Материал к ответу"
-          style="max-width:400px;max-height:300px;border-radius:10px;margin-top:15px"
+          alt="Изображение к правильному ответу"
         >
       `;
     }
   }
 
-  document.getElementById('ov-text').innerHTML = answerHtml;
-  document.getElementById('ov-media').innerHTML = '';
-  document.getElementById('ov-answerer').style.display = 'none';
+  text.innerHTML = `
+    <div class="answer-title">Правильный ответ:</div>
+    <div class="answer-value">${window.currentAnswer || '—'}</div>
+    ${answerMedia}
+  `;
 
-  document.getElementById('ov-btns').innerHTML = `
+  media.innerHTML = `
+    <img
+      class="answer-mouse answer-mouse-left"
+      src="/web/assets/10de9bad.jpg"
+      alt=""
+      aria-hidden="true"
+    >
+
+    <img
+      class="answer-mouse answer-mouse-right"
+      src="/web/assets/10de9bad.jpg"
+      alt=""
+      aria-hidden="true"
+    >
+  `;
+
+  media.style.display = 'flex';
+
+  buttons.innerHTML = `
     <button
       class="btn question-action question-finish"
       type="button"
       onclick="skipQ()"
     >
       Завершить
+    </button>
+
+    <button
+      class="btn question-close"
+      type="button"
+      onclick="
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('game-join-link').style.display = 'flex';
+      "
+    >
+      Вернуться к полю
     </button>
   `;
 }
