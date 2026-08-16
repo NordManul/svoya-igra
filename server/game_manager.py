@@ -470,40 +470,87 @@ class GameManager:
         room = self.rooms[room_code]
         if not game or player_id != room["host"]:
             return
+
         results = message.get("results", {})
+
+        # Применяем результаты к очкам игроков
         for pid, correct in results.items():
-            if pid in room["players"] and not room["players"][pid].get("is_host"):
-                # Also check this pid is in game["players"] (not an old disconnected ID)
-                if "players" in game and pid not in game["players"]:
-                    continue
-                bet = game["final_bets"].get(pid, 0)
+            # Ищем игрока по pid или по имени
+            target_pid = pid
+            target_name = None
+
+            # Если pid не найден, ищем по имени из game["players"]
+            if pid not in room["players"] and "players" in game:
+                # Проверяем, может pid - это имя?
+                for gpid, gp in game["players"].items():
+                    if gp["name"] == pid:
+                        target_pid = gpid
+                        target_name = gp["name"]
+                        break
+
+            if target_pid in room["players"] and not room["players"][target_pid].get("is_host"):
+                bet = game["final_bets"].get(target_pid, 0)
+
+                # Если игрок есть в game["players"], обновляем там
+                if "players" in game and target_pid in game["players"]:
+                    if correct:
+                        game["players"][target_pid]["score"] += bet
+                    else:
+                        game["players"][target_pid]["score"] -= bet
+
+                # Обновляем в room
                 if correct:
-                    room["players"][pid]["score"] += bet
+                    room["players"][target_pid]["score"] += bet
                 else:
-                    room["players"][pid]["score"] -= bet
-        # Send final scores back
-        # Build unique scores by name from game["players"] (most accurate)
+                    room["players"][target_pid]["score"] -= bet
+
+        # Собираем финальные результаты для ВСЕХ игроков
         seen_names = set()
         final_scores = {}
+
         if "players" in game:
-            for pid, p in game["players"].items():
-                name = p["name"]
+            for gpid, gp in game["players"].items():
+                name = gp["name"]
                 if name not in seen_names:
                     seen_names.add(name)
-                    # Get latest score from room if available
-                    latest_score = p["score"]
-                    if pid in room["players"]:
-                        latest_score = room["players"][pid]["score"]
-                    final_scores[pid] = {"name": name, "score": latest_score}
+                    # Берем актуальный счет из room
+                    latest_score = gp.get("score", 0)
+                    if gpid in room["players"]:
+                        latest_score = room["players"][gpid].get("score", 0)
+                    final_scores[gpid] = {"name": name, "score": latest_score}
         else:
             for pid, p in room["players"].items():
                 if not p.get("is_host"):
                     name = p["name"]
                     if name not in seen_names:
                         seen_names.add(name)
-                        final_scores[pid] = {"name": name, "score": p["score"]}
-        if player_id in room["players"]:
-                    await room["players"][player_id]["websocket"].send_json({"type": "final_scores", "scores": final_scores})
+                        final_scores[pid] = {"name": name, "score": p.get("score", 0)}
+
+        # ОТПРАВЛЯЕМ РЕЗУЛЬТАТЫ ВСЕМ ИГРОКАМ
+        game['phase'] = 'finished'
+        room['status'] = 'finished'
+
+        await self.broadcast_gamestate(room_code)
+
+        scores_message = {'type': 'final_scores', 'scores': final_scores}
+        await self.broadcast(room_code, scores_message)  # последним — клиент гарантированно покажет таблицу
+
+        print(f"✅ Final results applied for room {room_code}: {final_scores}")
+
+    async def _broadcast(self, room_code: str, message: dict):
+        """Отправляет сообщение всем игрокам в комнате."""
+        if room_code not in self.rooms:
+            return
+
+        room = self.rooms[room_code]
+        for pid, player in room["players"].items():
+            websocket = player.get("websocket")
+            if websocket is None:
+                continue
+            try:
+                await websocket.send_json(message)
+            except Exception as e:
+                print(f"Ошибка отправки игроку {pid}: {e}")
 
     async def _send_final_update(self, room_code):
         game = self.games.get(room_code)

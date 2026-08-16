@@ -2520,6 +2520,711 @@ body {
 .question-overlay .answer-revealed #ov-text:has(.question-answer-media) {
   margin-bottom: 30px !important;
 }
+
+    /* =========================================================
+   ФИНАЛ: визуальный редизайн без изменения игровой логики
+   ========================================================= */
+
+#game-screen.final-game-screen {
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+  background: #fff9ef !important;
+  color: #25233d;
+  isolation: isolate;
+}
+
+/* Декоративный жёлтый круг сверху слева */
+#game-screen.final-game-screen::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: -74px;
+  left: -72px;
+  width: 315px;
+  height: 315px;
+  border-radius: 50%;
+  background: #ffe8a3;
+  pointer-events: none;
+}
+
+/* Декоративный голубой круг снизу справа */
+#game-screen.final-game-screen::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  right: -105px;
+  bottom: -145px;
+  width: 480px;
+  height: 480px;
+  border-radius: 50%;
+  background: #c8e6f5;
+  pointer-events: none;
+}
+
+/* Содержимое всегда выше декоративного фона */
+#game-screen.final-game-screen .game-header,
+#game-screen.final-game-screen .players-row,
+#game-screen.final-game-screen .board-wrap,
+#game-screen.final-game-screen .ctrl-bar {
+  position: relative;
+  z-index: 1;
+}
+
+/* Заголовок «Финал»: сохраняем элемент #rname */
+#game-screen.final-game-screen .game-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 42px 72px 0;
+  background: transparent !important;
+}
+
+#game-screen.final-game-screen .game-header h2#rname {
+  color: #25233d;
+  font-family: "Unbounded", Arial, sans-serif;
+  font-size: clamp(30px, 3vw, 46px);
+  font-weight: 700;
+  letter-spacing: -1.7px;
+}
+
+/* Код комнаты остаётся видимым и находится в верхней части */
+#game-screen.final-game-screen #game-join-link.game-join-link {
+  top: 28px !important;
+  left: 50% !important;
+  z-index: 5 !important;
+  min-width: 260px;
+  min-height: 50px;
+  padding: 10px 18px;
+  border: 2px solid #25233d !important;
+  border-radius: 14px;
+  background: #eee4f7 !important;
+  color: #20203a !important;
+  box-shadow: 0 3px 0 #25233d !important;
+  font-size: 18px !important;
+}
+
+/* Игроки и очки остаются видимыми сверху справа */
+#game-screen.final-game-screen .players-row {
+  top: 20px !important;
+  right: 54px;
+  width: min(520px, 44vw);
+  padding-top: 52px;
+  gap: 12px !important;
+}
+
+/* Убираем декоративную подпись «Выбирает» только в финале */
+#game-screen.final-game-screen .players-row::before {
+  display: none;
+}
+
+/* Сетка финальных тем: 3 колонки как на референсе */
+#game-screen.final-game-screen .board-wrap {
+  flex: 1;
+  align-items: flex-start;
+  padding: 68px 32px 38px;
+}
+
+#game-screen.final-game-screen .board-grid {
+  width: min(820px, 100%);
+  max-width: 820px;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  grid-auto-rows: minmax(82px, auto) !important;
+  gap: 40px 42px !important;
+}
+
+/*
+  Финальные темы в текущей игре создаются как .bcell.
+  Не меняем data-cat, data-price, data-exists и data-sel:
+  обработчик document.addEventListener('click', ...) продолжит работать.
+*/
+#game-screen.final-game-screen .board-grid .bcell {
+  min-height: 82px !important;
+  padding: 14px 18px;
+  border: 2px solid #25233d;
+  border-radius: 20px;
+  background: #f7d4b4 !important;
+  color: #25233d !important;
+  box-shadow: 0 6px 0 #25233d;
+  cursor: pointer;
+  font-family: "Manrope", Arial, sans-serif;
+  font-size: clamp(19px, 2vw, 27px);
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+  text-transform: none;
+  transition: transform .14s ease, box-shadow .14s ease,
+    background-color .14s ease;
+}
+
+/* В обычной игре .head — заголовки категорий.
+   В финале они становятся карточками тем. */
+#game-screen.final-game-screen .board-grid .bcell.head {
+  min-height: 82px !important;
+  border-radius: 20px;
+  background: #f7d4b4 !important;
+  color: #25233d !important;
+  box-shadow: 0 6px 0 #25233d;
+  cursor: pointer;
+  font-size: clamp(19px, 2vw, 27px);
+  letter-spacing: 0;
+  line-height: 1.15;
+  text-transform: none;
+}
+
+/* Нейтрализуем старые разноцветные правила для .head */
+#game-screen.final-game-screen .board-grid .bcell.head:nth-child(2),
+#game-screen.final-game-screen .board-grid .bcell.head:nth-child(3),
+#game-screen.final-game-screen .board-grid .bcell.head:nth-child(4),
+#game-screen.final-game-screen .board-grid .bcell.head:nth-child(5) {
+  background: #f7d4b4 !important;
+}
+
+/* Наведение и нажатие, без вмешательства в click-логику */
+#game-screen.final-game-screen .board-grid .bcell:hover:not(.used),
+#game-screen.final-game-screen .board-grid .bcell.head:hover {
+  transform: translateY(-2px);
+  background: #fadcc1 !important;
+  box-shadow: 0 8px 0 #25233d;
+}
+
+#game-screen.final-game-screen .board-grid .bcell:active:not(.used) {
+  transform: translateY(5px);
+  box-shadow: 0 1px 0 #25233d;
+}
+
+/* Тема, выбранная текущей логикой сервера */
+#game-screen.final-game-screen .board-grid .bcell.selected {
+  background: #bcebd6 !important;
+  border-color: #167d5d;
+  box-shadow: 0 6px 0 #167d5d;
+  animation: none !important;
+}
+
+/* Использованная тема: остаётся видимой, но неактивной */
+#game-screen.final-game-screen .board-grid .bcell.used {
+  background: #e4ded6 !important;
+  color: #8b8791 !important;
+  box-shadow: none;
+}
+
+/* Низ экрана: сохраняем текущие технические кнопки и их логику */
+#game-screen.final-game-screen .ctrl-bar {
+  min-height: 54px !important;
+  padding: 8px 32px 20px !important;
+  background: transparent !important;
+}
+
+/*
+  Кнопку открытия ставок не удаляем из DOM:
+  скрываем визуально, если она создаётся с одним из этих id/классов.
+  Добавьте её фактический селектор в этот список, если он другой.
+*/
+#game-screen.final-game-screen #btn-open-bets,
+#game-screen.final-game-screen .btn-open-bets,
+#game-screen.final-game-screen [data-action="open-bets"] {
+  display: none !important;
+}
+
+@media (max-width: 1050px) {
+  #game-screen.final-game-screen .game-header {
+    padding: 28px 28px 0;
+  }
+
+  #game-screen.final-game-screen .players-row {
+    position: relative;
+    top: auto !important;
+    right: auto;
+    width: min(820px, calc(100% - 56px));
+    margin: 16px auto 0;
+    padding-top: 0;
+    justify-content: center !important;
+  }
+
+  #game-screen.final-game-screen .board-wrap {
+    padding-top: 42px;
+  }
+}
+
+@media (max-width: 780px) {
+  #game-screen.final-game-screen {
+    overflow-y: auto;
+  }
+
+  #game-screen.final-game-screen #game-join-link.game-join-link {
+    position: static !important;
+    width: fit-content;
+    min-width: 0;
+    margin: 14px auto 0;
+    transform: none !important;
+  }
+
+  #game-screen.final-game-screen .game-header {
+    display: block;
+    text-align: center;
+  }
+
+  #game-screen.final-game-screen .board-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 24px !important;
+  }
+
+  #game-screen.final-game-screen .board-wrap {
+    padding: 34px 20px;
+  }
+}
+
+@media (max-width: 500px) {
+  #game-screen.final-game-screen .board-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  #game-screen.final-game-screen .board-grid .bcell,
+  #game-screen.final-game-screen .board-grid .bcell.head {
+    min-height: 70px !important;
+    font-size: 20px;
+  }
+
+  #game-screen.final-game-screen::after {
+    right: -190px;
+  }
+}
+
+    /* =========================================================
+   ФИНАЛ: корректировка сетки, кода комнаты и игроков
+   Добавить ПОСЛЕДНИМ в <style>
+   ========================================================= */
+
+/* Темы финала: 5 колонок и 2 строки */
+#game-screen.final-game-screen .board-grid {
+  width: min(1120px, calc(100vw - 80px));
+  max-width: 1120px;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  grid-auto-rows: 102px !important;
+  gap: 32px 28px !important;
+}
+
+/* Карточки тем: текст как у тем на игровом поле, но больше */
+#game-screen.final-game-screen .board-grid .bcell,
+#game-screen.final-game-screen .board-grid .bcell.head {
+  min-height: 102px !important;
+  padding: 14px 12px;
+  font-family: "Manrope", Arial, sans-serif !important;
+  font-size: clamp(18px, 1.65vw, 26px) !important;
+  font-weight: 800 !important;
+  letter-spacing: 1px !important;
+  line-height: 1.15 !important;
+  text-transform: uppercase !important;
+}
+
+/* Крупный код комнаты, как на обычном игровом экране */
+#game-screen.final-game-screen #game-join-link.game-join-link {
+  min-width: 330px !important;
+  min-height: 58px !important;
+  padding: 12px 26px !important;
+  font-size: 21px !important;
+  font-weight: 900 !important;
+  letter-spacing: .5px !important;
+}
+
+/*
+  Игроки: не фиксируем справа, иначе первые карточки уходят
+  за левый край экрана. Делаем одну центрированную строку.
+*/
+#game-screen.final-game-screen .players-row {
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  left: auto !important;
+
+  width: min(1180px, calc(100vw - 72px)) !important;
+  margin: 18px auto 0 !important;
+  padding: 0 !important;
+
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: clamp(10px, 1.5vw, 22px) !important;
+
+  overflow: visible !important;
+}
+
+/* У каждого игрока одинаковая доступная ширина */
+#game-screen.final-game-screen .player-badge {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  max-width: 220px;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 10px !important;
+}
+
+/* Имя игрока не раздвигает строку за пределы окна */
+#game-screen.final-game-screen .player-badge .pname {
+  min-width: 0;
+  padding: 9px 12px !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: clamp(15px, 1.6vw, 23px) !important;
+  letter-spacing: 1px !important;
+}
+
+/* Очки остаются хорошо читаемыми */
+#game-screen.final-game-screen .player-badge .pscore {
+  flex: 0 0 auto;
+  font-size: clamp(23px, 2.4vw, 36px) !important;
+}
+
+/* В финале заголовок, код и игроки идут один за другим */
+#game-screen.final-game-screen .game-header {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center !important;
+  padding: 26px 36px 0 !important;
+}
+
+#game-screen.final-game-screen .game-header h2#rname {
+  align-self: flex-start;
+}
+
+/*
+  Код комнаты больше не position: fixed:
+  так он не перекрывает игроков и не отрывается от финального экрана.
+*/
+#game-screen.final-game-screen #game-join-link.game-join-link {
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+  z-index: auto !important;
+  margin: -36px 0 0 !important;
+}
+
+/* Уменьшаем пустой отступ до сетки тем */
+#game-screen.final-game-screen .board-wrap {
+  padding-top: 46px !important;
+  padding-bottom: 24px !important;
+}
+
+/* Узкие ноутбуки: темы остаются 5 × 2, но плотнее */
+@media (max-width: 1100px) {
+  #game-screen.final-game-screen .board-grid {
+    width: min(100%, calc(100vw - 42px));
+    grid-auto-rows: 88px !important;
+    gap: 24px 18px !important;
+  }
+
+  #game-screen.final-game-screen .board-grid .bcell,
+  #game-screen.final-game-screen .board-grid .bcell.head {
+    min-height: 88px !important;
+    font-size: clamp(15px, 1.8vw, 21px) !important;
+  }
+
+  #game-screen.final-game-screen .players-row {
+    width: calc(100vw - 42px) !important;
+    gap: 10px !important;
+  }
+
+  #game-screen.final-game-screen .player-badge .pname {
+    font-size: clamp(13px, 1.65vw, 18px) !important;
+  }
+
+  #game-screen.final-game-screen .player-badge .pscore {
+    font-size: clamp(20px, 2.2vw, 30px) !important;
+  }
+}
+
+/* На телефоне пять колонок не поместятся — оставляем удобную сетку */
+@media (max-width: 700px) {
+  #game-screen.final-game-screen .board-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-auto-rows: 76px !important;
+  }
+
+  #game-screen.final-game-screen .players-row {
+    flex-wrap: wrap !important;
+  }
+
+  #game-screen.final-game-screen .player-badge {
+    flex: 0 1 calc(50% - 10px) !important;
+    max-width: none;
+  }
+
+  #game-screen.final-game-screen #game-join-link.game-join-link {
+    min-width: min(330px, 100%) !important;
+    margin-top: 14px !important;
+  }
+}
+
+    /* Финал: немного ниже сетка тем и более округлые карточки */
+#game-screen.final-game-screen .board-wrap {
+  padding-top: 105px !important;
+}
+
+#game-screen.final-game-screen .board-grid .bcell,
+#game-screen.final-game-screen .board-grid .bcell.head {
+  border-radius: 20px !important;
+}
+
+
+    /* =========================================================
+   Финал: модальное окно ставок
+   Применяется к #overlay.final-bet-overlay
+   ========================================================= */
+
+#overlay.final-bet-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 3000 !important;
+
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+
+  padding: 28px;
+  overflow: hidden;
+  box-sizing: border-box;
+
+  background: #fff9ef !important;
+  isolation: isolate;
+}
+
+/* Декоративные круги на фоне */
+#overlay.final-bet-overlay::before,
+#overlay.final-bet-overlay::after {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+#overlay.final-bet-overlay::before {
+  top: -85px;
+  left: -65px;
+  width: 300px;
+  height: 300px;
+  background: #ffe8a3;
+}
+
+#overlay.final-bet-overlay::after {
+  right: -130px;
+  bottom: -150px;
+  width: 470px;
+  height: 470px;
+  background: #c8e6f5;
+}
+
+/* Центральная карточка */
+#overlay.final-bet-overlay .overlay-box {
+  width: min(620px, calc(100vw - 40px)) !important;
+  max-width: 620px !important;
+  padding: 42px 52px 38px !important;
+
+  border: 3px solid #25233d !important;
+  border-radius: 28px !important;
+  background: #fffdf9 !important;
+  color: #20203a !important;
+  box-shadow: 0 8px 0 #25233d !important;
+
+  text-align: center;
+  font-family: "Manrope", Arial, sans-serif !important;
+}
+
+/* Название выбранной темы */
+#overlay.final-bet-overlay .overlay-box h2 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 68px;
+  margin: 0 0 24px !important;
+  padding: 13px 28px;
+
+  border: 2px solid #25233d;
+  border-radius: 20px;
+  background: #ffcdb8;
+  color: #20203a !important;
+  box-shadow: 0 5px 0 #25233d;
+
+  font-family: "Unbounded", Arial, sans-serif !important;
+  font-size: clamp(23px, 3vw, 36px) !important;
+  font-weight: 700 !important;
+  line-height: 1.12;
+}
+
+/* Текст-инструкция, в том числе с inline style */
+#overlay.final-bet-overlay .overlay-box p {
+  margin: 0 0 28px !important;
+  color: #20203a !important;
+
+  font-family: "Manrope", Arial, sans-serif !important;
+  font-size: clamp(18px, 2vw, 24px) !important;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+/* Основная кнопка ALLOW BETS */
+#overlay.final-bet-overlay .overlay-box .btn.btn-green {
+  min-height: 58px;
+  padding: 13px 26px !important;
+
+  border: 2px solid #167d5d !important;
+  border-radius: 16px !important;
+  background: #abe7d0 !important;
+  color: #167d5d !important;
+  box-shadow: 0 5px 0 #167d5d !important;
+
+  cursor: pointer;
+  font-family: "Manrope", Arial, sans-serif !important;
+  font-size: clamp(16px, 1.6vw, 21px) !important;
+  font-weight: 900 !important;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+
+  transition: transform .14s ease, box-shadow .14s ease;
+}
+
+#overlay.final-bet-overlay .overlay-box .btn.btn-green:hover {
+  transform: translateY(2px);
+  box-shadow: 0 3px 0 #167d5d !important;
+}
+
+#overlay.final-bet-overlay .overlay-box .btn.btn-green:active {
+  transform: translateY(5px);
+  box-shadow: none !important;
+}
+
+/* Если появляется кнопка SHOW QUESTION */
+#overlay.final-bet-overlay .overlay-box .btn.btn-orange {
+  min-height: 58px;
+  margin-left: 12px !important;
+  padding: 13px 26px !important;
+
+  border: 2px solid #25233d !important;
+  border-radius: 16px !important;
+  background: #ffe38f !important;
+  color: #20203a !important;
+  box-shadow: 0 5px 0 #25233d !important;
+
+  font-family: "Manrope", Arial, sans-serif !important;
+  font-size: clamp(16px, 1.6vw, 21px) !important;
+  font-weight: 900 !important;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+#overlay.final-bet-overlay .overlay-box .btn.btn-orange:hover {
+  transform: translateY(2px);
+  box-shadow: 0 3px 0 #25233d !important;
+}
+
+@media (max-width: 600px) {
+  #overlay.final-bet-overlay {
+    padding: 18px;
+  }
+
+  #overlay.final-bet-overlay .overlay-box {
+    padding: 30px 22px 28px !important;
+    border-radius: 22px !important;
+  }
+
+  #overlay.final-bet-overlay .overlay-box .btn.btn-orange {
+    margin: 14px 0 0 !important;
+  }
+}
+    /* Финал: расстояние между «Открыть ставки» и «Показать вопрос» */
+#overlay.final-bet-overlay .overlay-box .btn.btn-orange {
+  margin-left: 32px !important;
+}
+
+    /* Финал: отдельная строка действий */
+#overlay.final-bet-overlay .final-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 28px;
+  margin-top: 4px;
+}
+
+#overlay.final-bet-overlay .final-actions .btn.btn-orange {
+  margin-left: 0 !important;
+}
+
+@media (max-width: 600px) {
+  #overlay.final-bet-overlay .final-actions {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+    /* Финал: ставки и ответы игроков */
+#overlay.final-bet-overlay #final-status {
+  width: min(100%, 520px);
+  margin: 28px auto 0;
+}
+
+#overlay.final-bet-overlay .final-status-list {
+  display: grid;
+  gap: 12px;
+}
+
+#overlay.final-bet-overlay .final-player-status {
+  display: grid;
+  grid-template-columns: minmax(120px, .8fr) minmax(130px, 1fr) minmax(160px, 1.4fr);
+  gap: 12px;
+  align-items: center;
+
+  padding: 13px 16px;
+  border: 2px solid #25233d;
+  border-radius: 16px;
+  background: #fff9ef;
+  color: #20203a;
+
+  font-family: "Manrope", Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: left;
+}
+
+#overlay.final-bet-overlay .final-player-name {
+  overflow: hidden;
+  color: #20203a;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#overlay.final-bet-overlay .final-player-bet {
+  color: #167d5d;
+}
+
+#overlay.final-bet-overlay .final-player-answer {
+  overflow: hidden;
+  color: #20203a;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#overlay.final-bet-overlay .final-player-status b {
+  font-weight: 900;
+}
+
+@media (max-width: 620px) {
+  #overlay.final-bet-overlay .final-player-status {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  #overlay.final-bet-overlay .final-player-answer {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
 </style>
 </head>
 <body>
@@ -2837,6 +3542,8 @@ document.getElementById('lobby-screen').style.display = 'block';
       if (msg.type === 'game_state' || msg.type === 'gamestate') {
         const phase = msg.game?.phase;
 
+        if (phase === 'finished') return;
+
         if (phase !== 'playing' && phase !== 'final') {
           updateLobby(msg);
           return;
@@ -2849,14 +3556,15 @@ document.getElementById('lobby-screen').style.display = 'block';
         return;
       }
 
-      if (msg.type === 'finalscores') {
-        showFinalResults(msg.scores);
-        return;
-      }
+      if (msg.type === 'final_scores' || msg.type === 'finalscores') {
+  showFinalResults(msg.scores || msg.final_scores || {});
+  return;
+}
 
-      if (msg.type === 'finalupdate') {
-        updateFinalOverlay(msg);
-      }
+      if (msg.type === 'final_update' || msg.type === 'finalupdate') {
+  updateFinalOverlay(msg);
+  return;
+}
     };
   } catch (error) {
     console.error(error);
@@ -2939,8 +3647,15 @@ document.getElementById('gplayers').setAttribute(
   'data-selector-name',
   selectorName
 );
+
+document.getElementById('game-screen').classList.toggle(
+  'final-game-screen',
+  game.phase === 'final'
+);
+
   if(game.phase==='final'){
     document.getElementById('rname').textContent='Финал';
+    document.getElementById('game-screen').classList.add('final-game-screen');
 
     if(!game._finalThemes) game._finalThemes = game.final.map(function(f,i){return {name:f.name||('Theme '+(i+1)), text:f.text, answer:f.answer, qmedia:f.qmedia, amedia:f.amedia, index:i, eliminated:false}});
     var activeThemes = game._finalThemes.filter(function(t){return !t.eliminated});
@@ -2985,7 +3700,9 @@ if (gameJoinLink) {
   const theme = q.category || question.category || 'Тема';
   const price = q.price || question.price || '';
 
-  overlay.classList.add('question-overlay');
+  overlay.classList.remove('final-bet-overlay');
+overlay.classList.add('question-overlay');
+
   overlay.innerHTML = `
     <div class="overlay-box question-card">
       <div class="question-badge">${theme}${price ? ' · ' + price : ''}</div>
@@ -3149,7 +3866,8 @@ if (gameJoinLink) {
   document.getElementById('ansname').textContent='';
 }
 function selQ(cat,price){ws.send(JSON.stringify({type:'select_question',category:cat,price:price}))}
-function activateA(){window.ws.send(JSON.stringify({type:"open_question"}))} function evalA(correct){window.ws.send(JSON.stringify({type:"evaluate_answer",correct:correct}))} function activateA(){window.ws.send(JSON.stringify({type:"open_question"}))} function evalA(correct){window.ws.send(JSON.stringify({type:"evaluate_answer",correct:correct}))} function openQ(){ws.send(JSON.stringify({type:'open_question'}))}
+function activateA(){window.ws.send(JSON.stringify({type:"open_question"}))} function evalA(correct){window.ws.send(JSON.stringify({type:"evaluate_answer",correct:correct}))}
+function openQ(){ws.send(JSON.stringify({type:'open_question'}))}
 function activateA(){ws.send(JSON.stringify({type:'open_question'}))}
 function evalA(correct) {
   /*
@@ -3157,7 +3875,7 @@ function evalA(correct) {
     который сейчас отвечал на вопрос.
   */
   if (correct) {
-    const game = window.gameState && window.gameState.game;
+    const game = window._gameState && window._gameState.game;
 
     const answeringName =
       (game && game.answering_name) ||
@@ -3199,7 +3917,7 @@ function showAnswerInOverlay() {
   card.classList.add('answer-revealed');
 
   const answeringName =
-    window.gameState?.game?.answeringname ||
+    window._gameState?.game?.answeringname ||
     window.lastAnsweringPlayerName ||
     '';
 
@@ -3287,33 +4005,6 @@ function eliminateTheme(idx){
   renderGame(window._gameState);
 }
 
-function showFinalQuestion(idx){
-  if(!window._gameState) return;
-  var game = window._gameState.game;
-  if(!game._finalThemes) return;
-  var theme = game._finalThemes[idx];
-  if(!theme){ alert('Theme not found'); return; }
-  window._finalTheme = theme;
-  document.getElementById('overlay').innerHTML =
-    '<div class="overlay-box">'+
-    '<div style="font-size:28px;margin-bottom:20px">'+(theme.text||'No question')+'</div>'+
-    (theme.qmedia?'<img src="'+theme.qmedia+'" style="max-width:400px;max-height:300px;border-radius:10px;margin-bottom:20px">':'')+
-    '<button class="btn btn-orange" onclick="showFinalAnswer()" style="font-size:18px;padding:12px 30px;margin:10px">SHOW ANSWER</button>'+
-    '<button class="btn btn-gray" onclick="document.getElementById(\'overlay\').style.display=\'none\'" style="font-size:18px;padding:12px 30px;margin:10px">CLOSE</button>'+
-    '</div>';
-  document.getElementById('overlay').style.display='flex';
-}
-
-function showFinalAnswer(){
-  var t = window._finalTheme;
-  document.getElementById('overlay').innerHTML =
-    '<div class="overlay-box">'+
-    '<div style="font-size:28px;color:#ff9800;font-weight:bold;margin-bottom:20px">'+t.answer+'</div>'+
-    (t.amedia?'<img src="'+t.amedia+'" style="max-width:400px;max-height:300px;border-radius:10px;margin-bottom:20px">':'')+
-    '<button class="btn btn-red" onclick="document.getElementById(\'overlay\').style.display=\'none\'" style="font-size:18px;padding:12px 30px;margin:10px">CLOSE</button>'+
-    '</div>';
-  document.getElementById('overlay').style.display='flex';
-}
 
 function skipToFinal(){
   ws.send(JSON.stringify({type:'skip_to_final'}));
@@ -3328,13 +4019,36 @@ function showFinalQuestion(idx){
   window._finalTheme = theme;
   var fp = game.final_phase || '';
   var ov = document.getElementById('overlay');
-  if(!fp){
-    ov.innerHTML = '<div class="overlay-box"><h2>'+theme.name+'</h2><p style="font-size:22px">Allow players to place bets</p><button class="btn btn-green" onclick="allowBets()">ALLOW BETS</button><div id="final-status"></div></div>';
-  } else if(fp==='betting'){
-    ov.innerHTML = '<div class="overlay-box"><h2>'+theme.name+'</h2><p style="font-size:22px">Bets open. Show question when ready.</p><button class="btn btn-green" onclick="allowBets()">ALLOW BETS</button> <button class="btn btn-orange" onclick="goToAnswering()">SHOW QUESTION</button><div id="final-status"></div></div>';
-  } else if(fp==='answering'){
-    ov.innerHTML = '<div class="overlay-box"><h2>'+theme.name+'</h2><div style="font-size:24px;margin:15px 0">'+theme.text+'</div>'+(theme.qmedia?'<img src="'+theme.qmedia+'" style="max-width:400px;max-height:300px;border-radius:10px">':'')+'<div id="final-status"></div><button class="btn btn-orange" onclick="showFinalAnswer()">SHOW ANSWER</button></div>';
+  ov.classList.add('final-bet-overlay');
+
+  ov.classList.remove('question-overlay');
+ov.classList.add('final-bet-overlay');
+  if (!fp) {
+  ov.innerHTML =
+    '<div class="overlay-box"><h2>' + theme.name + '</h2>' +
+    '<p style="font-size:22px">Разрешите игрокам сделать ставки</p>' +
+    '<button class="btn btn-green" onclick="allowBets()">ОТКРЫТЬ СТАВКИ</button>' +
+    '<div id="final-status"></div></div>';
+}
+else if (fp === 'betting') {
+  ov.innerHTML =
+    '<div class="overlay-box">' +
+      '<h2>' + theme.name + '</h2>' +
+      '<p style="font-size:22px">Ставки открыты. Когда будете готовы, покажите вопрос.</p>' +
+      '<div class="final-actions">' +
+        '<button class="btn btn-green" onclick="allowBets()">ОТКРЫТЬ СТАВКИ</button>' +
+        '<button class="btn btn-orange" onclick="goToAnswering()">ПОКАЗАТЬ ВОПРОС</button>' +
+      '</div>' +
+      '<div id="final-status"></div>' +
+    '</div>';
+} else if(fp==='answering'){
+    ov.innerHTML = '<div class="overlay-box"><h2>'+theme.name+'</h2><div style="font-size:24px;margin:15px 0">'+theme.text+'</div>'+(theme.qmedia?'<img src="'+theme.qmedia+'" style="max-width:400px;max-height:300px;border-radius:10px">':'')+'<div id="final-status"></div><button class="btn btn-orange" onclick="showFinalAnswer()">ПОКАЗАТЬ ОТВЕТ</button></div>';
   }
+  updateFinalOverlay({
+  final_bets: window._gameState.game.final_bets || {},
+  final_answers: window._gameState.game.final_answers || {},
+  players: window._gameState.players || {}
+});
   ov.style.display = 'flex';
 }
 function allowBets(){
@@ -3347,17 +4061,123 @@ function goToAnswering(){
   window._gameState.game.final_phase = "answering";
   if(window._finalTheme) showFinalQuestion(window._finalTheme.index);
 }
-function updateFinalOverlay(msg){ if(msg.final_bets) window._gameState.game.final_bets = msg.final_bets; if(msg.final_answers) window._gameState.game.final_answers = msg.final_answers; if(window._gameState){ window._gameState.game.final_bets = msg.final_bets || window._gameState.game.final_bets; window._gameState.game.final_answers = msg.final_answers || window._gameState.game.final_answers; }
-  var sd = document.getElementById('final-status');
-  if(!sd) return;
-  var info = '';
-  for(var id in msg.players){
-    var p = msg.players[id];
-    if(p.has_answered) info += '<div style="color:#ff9800;font-size:18px">V '+p.name+': ANSWERED</div>';
-    else if(p.has_bet) info += '<div style="color:#28a745;font-size:18px">V '+p.name+': BET PLACED</div>';
-    else info += '<div style="color:#aaa;font-size:18px">'+p.name+': waiting...</div>';
+function updateFinalOverlay(msg) {
+  if (!window._gameState || !window._gameState.game) return;
+
+  var game = window._gameState.game;
+
+  /*
+    Сервер присылает ключи в snake_case:
+    final_bets и final_answers.
+    Дополнительно оставлены варианты без подчёркиваний,
+    чтобы старые сообщения тоже не ломали интерфейс.
+  */
+  var incomingBets =
+    msg.final_bets ??
+    msg.finalbets ??
+    game.final_bets ??
+    game.finalbets ??
+    {};
+
+  var incomingAnswers =
+    msg.final_answers ??
+    msg.finalanswers ??
+    game.final_answers ??
+    game.finalanswers ??
+    {};
+
+  game.final_bets = incomingBets;
+  game.final_answers = incomingAnswers;
+
+  var status = document.getElementById('final-status');
+  if (!status) return;
+
+  var players = msg.players || window._gameState.players || {};
+  var html = '<div class="final-status-list">';
+
+  for (var id in players) {
+    var player = players[id];
+
+    if (player.is_host) continue;
+
+    /*
+      Ставки и ответы могут храниться либо по id игрока,
+      либо по имени игрока. Проверяем оба варианта.
+    */
+    var rawBet =
+      incomingBets[id] ??
+      incomingBets[player.id] ??
+      incomingBets[player.name] ??
+      player.final_bet ??
+      player.bet ??
+      null;
+
+    var rawAnswer =
+      incomingAnswers[id] ??
+      incomingAnswers[player.id] ??
+      incomingAnswers[player.name] ??
+      player.final_answer ??
+      player.answer ??
+      null;
+
+    /*
+      Если сервер хранит ставку/ответ объектом,
+      берём значение из наиболее вероятных ключей.
+    */
+    var bet = rawBet;
+    if (rawBet && typeof rawBet === 'object') {
+      bet =
+        rawBet.amount ??
+        rawBet.bet_amount ??
+        rawBet.bet ??
+        rawBet.value ??
+        rawBet.sum ??
+        '';
+    }
+
+    var answer = rawAnswer;
+    if (rawAnswer && typeof rawAnswer === 'object') {
+      answer =
+        rawAnswer.text ??
+        rawAnswer.answer_text ??
+        rawAnswer.answer ??
+        rawAnswer.value ??
+        '';
+    }
+
+    /*
+      Поддержка статусов сервера в snake_case.
+    */
+    var hasBet =
+      player.has_bet === true ||
+      player.hasbet === true ||
+      bet !== null && bet !== undefined && bet !== '';
+
+    var hasAnswered =
+      player.has_answered === true ||
+      player.hasanswered === true ||
+      answer !== null && answer !== undefined && answer !== '';
+
+    var betText = hasBet
+      ? 'Ставка: <b>' + escapeFinalHtml(bet) + '</b>'
+      : 'Ставка не сделана';
+
+    var answerText = hasAnswered
+      ? 'Ответ: <b>' + escapeFinalHtml(answer || 'Получен') + '</b>'
+      : 'Ответа пока нет';
+
+    html +=
+      '<div class="final-player-status">' +
+        '<div class="final-player-name">' +
+          escapeFinalHtml(player.name || 'Игрок') +
+        '</div>' +
+        '<div class="final-player-bet">' + betText + '</div>' +
+        '<div class="final-player-answer">' + answerText + '</div>' +
+      '</div>';
   }
-  sd.innerHTML = info;
+
+  html += '</div>';
+  status.innerHTML = html;
 }
 function showFinalAnswer(){
   var t = window._finalTheme;
@@ -3367,26 +4187,30 @@ function showFinalAnswer(){
   var answers = game.final_answers || {};
   var players = window._gameState.players;
   var h = '<div class="overlay-box"><h2>'+t.name+'</h2>';
-  h += '<div style="font-size:24px;color:#ff9800;font-weight:bold;margin:15px 0">ANSWER: '+t.answer+'</div>';
-  h += '<table style="width:100%;margin:15px 0"><tr><th>Player</th><th>Bet</th><th>Answer</th><th>Correct</th></tr>';
+  h += '<div style="font-size:24px;color:#ff9800;font-weight:bold;margin:15px 0">ОТВЕТ: '+t.answer+'</div>';
+  h += '<table style="width:100%;margin:15px 0"><tr><th>Игрок</th><th>Ставка</th><th>Ответ</th><th>Верно</th></tr>';
   for(var id in players){
     var p = players[id];
     if(p.is_host) continue;
     h += '<tr><td>'+p.name+'</td><td>'+(bets[id]||0)+'</td><td>'+(answers[id]||'-')+'</td><td><input type="checkbox" id="cb_'+id+'" onchange="window._fc=window._fc||{};window._fc[\''+id+'\']=this.checked"></td></tr>';
   }
-  h += '</table><button class="btn btn-green" onclick="applyFinalResults()">APPLY RESULTS</button></div>';
+  h += '</table><button class="btn btn-green" onclick="applyFinalResults()">ПОКАЗАТЬ РЕЗУЛЬТАТЫ</button></div>';
   document.getElementById('overlay').innerHTML = h;
   document.getElementById('overlay').style.display = 'flex';
   window._fc = {};
 }
-function applyFinalResults(){
-  window.ws.send(JSON.stringify({type:"final_results", results:window._fc}));
-  document.getElementById('overlay').style.display = 'none';
+function applyFinalResults() {
+    if (!window.ws || window.ws.readyState !== WebSocket.OPEN) { alert('Нет соединения с сервером'); return; }
+    window.ws.send(JSON.stringify({ type: 'final_results', results: window.fc || {} }));
+    document.getElementById('overlay').style.display = 'none';
 }
 
 function showFinalResults(scores){
-  var sorted = [];
-  for(var id in scores){ sorted.push({name:scores[id].name, score:scores[id].score}); }
+    scores = scores || {};
+    document.getElementById('lobby-screen').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+    var sorted = [];
+    for (var id in scores) sorted.push({ name: scores[id].name, score: scores[id].score });
   sorted.sort(function(a,b){return b.score - a.score});
   var h = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;text-align:center"><div>';
   h += '<h1 style="font-size:48px;margin-bottom:40px">RESULTS</h1>';
