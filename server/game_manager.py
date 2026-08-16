@@ -5,6 +5,7 @@ from typing import Dict
 from fastapi import WebSocket
 from datetime import datetime
 
+
 class GameManager:
     def __init__(self):
         self.rooms: Dict = {}
@@ -24,9 +25,9 @@ class GameManager:
                 questions = []
                 for price in rc["prices"]:
                     questions.append({"price": price, "text": "", "answer": ""})
-                cats.append({"name": f"Theme {i+1}", "questions": questions})
+                cats.append({"name": f"Theme {i + 1}", "questions": questions})
             rounds.append({"name": rc["name"], "categories": cats})
-        final = [{"name": f"Theme {i+1}", "text": "", "answer": ""} for i in range(10)]
+        final = [{"name": f"Theme {i + 1}", "text": "", "answer": ""} for i in range(10)]
         return {"rounds": rounds, "final": final}
 
     def save_template(self, room_code: str, template: dict):
@@ -98,7 +99,6 @@ class GameManager:
         game = self.games.get(room_code)
         if not game or not game["current_question"]:
             return
-        # Удаляем вопрос из доски
         price = game["current_question"]["price"]
         key = f"{game['current_question']['category']}_{price}"
         current = game["rounds"][game["current_round"]]
@@ -116,16 +116,14 @@ class GameManager:
             return
         room = self.rooms[room_code]
         game = self.games.get(room_code)
-        
-        # Always accept connection, validate in _handle_join
+
         if room["status"] == "waiting":
             player_count = len([p for p in room["players"].values() if not p.get("is_host")])
             if player_count >= 5:
                 await websocket.send_json({"type": "error", "message": "Room is full"})
                 await websocket.close(code=4000, reason="Room full")
                 return
-        
-        # For reconnecting players - add with placeholder, will be updated in _handle_join
+
         room["players"][player_id] = {
             "websocket": websocket,
             "name": "Player...",
@@ -140,11 +138,9 @@ class GameManager:
         if room_code in self.rooms:
             room = self.rooms[room_code]
             game = self.games.get(room_code)
-            # If game running - keep player in game.players but remove websocket
             if game and room["status"] == "playing":
                 if player_id in room["players"]:
-                    room["players"][player_id]["websocket"] = None  # Mark offline
-                # Broadcast to update online status on frontend
+                    room["players"][player_id]["websocket"] = None
                 await self.broadcast_game_state(room_code)
                 return
             else:
@@ -199,10 +195,8 @@ class GameManager:
         room = self.rooms[room_code]
         game = self.games.get(room_code)
         name = message.get("name", "Player")
-        
-        # If game is running - check if player is reconnecting
+
         if room["status"] == "playing" and game:
-            # Find frozen player by name (case-insensitive)
             found_pid = None
             name_lower = name.lower()
             for pid, p in game["players"].items():
@@ -210,7 +204,6 @@ class GameManager:
                     found_pid = pid
                     break
             if found_pid:
-                # Reconnect - restore score and websocket
                 old_score = game["players"][found_pid].get("score", 0)
                 old_can_answer = game["players"][found_pid].get("can_answer", False)
                 old_has_bet = game["players"][found_pid].get("has_bet", False)
@@ -224,7 +217,6 @@ class GameManager:
                     "has_bet": old_has_bet,
                     "has_answered": old_has_answered,
                 }
-                # Remove ALL old entries for this player name from both game["players"] and room["players"]
                 to_delete = []
                 name_lower = name.lower().strip()
                 for pid, p in list(game["players"].items()):
@@ -238,25 +230,28 @@ class GameManager:
                         game["final_bets"][player_id] = game["final_bets"].pop(pid)
                     if pid in game.get("final_answers", {}):
                         game["final_answers"][player_id] = game["final_answers"].pop(pid)
-                # Add current player
-                game["players"][player_id] = {"name": name, "score": old_score, "can_answer": old_can_answer, "has_bet": old_has_bet, "has_answered": old_has_answered}
+                game["players"][player_id] = {"name": name, "score": old_score, "can_answer": old_can_answer,
+                                              "has_bet": old_has_bet, "has_answered": old_has_answered}
                 print(f"Player {name} reconnected with score {old_score}, can_answer={old_can_answer}, new_id={player_id}")
-                # Send game state only to this player
                 players_info = {}
                 for pid, p in game["players"].items():
-                    players_info[pid] = {"name": p["name"], "score": p["score"], "can_answer": p.get("can_answer", False), "is_host": False, "has_bet": p.get("has_bet", False), "has_answered": p.get("has_answered", False), "online": True}
-                state = {"type": "game_state", "game": game, "players": players_info, "host_name": room.get("host_name", ""), "answering_name": game.get("answering_name", ""), "final_phase": game.get("final_phase", "")}
+                    players_info[pid] = {"name": p["name"], "score": p["score"],
+                                         "can_answer": p.get("can_answer", False), "is_host": False,
+                                         "has_bet": p.get("has_bet", False),
+                                         "has_answered": p.get("has_answered", False), "online": True}
+                state = {"type": "game_state", "game": game, "players": players_info,
+                         "host_name": room.get("host_name", ""), "answering_name": game.get("answering_name", ""),
+                         "final_phase": game.get("final_phase", "")}
                 try:
                     await room["players"][player_id]["websocket"].send_json(state)
-                except: pass
-                # Broadcast to others
+                except:
+                    pass
                 await self.broadcast_game_state(room_code)
                 return
             else:
                 await self.send_to_player(room_code, player_id, {"type": "error", "message": "Game already started"})
                 return
-        
-        # Normal join
+
         if player_id in room["players"]:
             room["players"][player_id]["name"] = name
         await self.broadcast_room_state(room_code)
@@ -277,12 +272,11 @@ class GameManager:
         game = self._create_game(room_code)
         self.games[room_code] = game
         room["status"] = "playing"
-        # Freeze player list - copy names and scores
         game["players"] = {}
         for pid, p in room["players"].items():
             if not p.get("is_host"):
-                game["players"][pid] = {"name": p["name"], "score": 0, "can_answer": False, "has_bet": False, "has_answered": False}
-        # Random first selector
+                game["players"][pid] = {"name": p["name"], "score": 0, "can_answer": False, "has_bet": False,
+                                        "has_answered": False}
         player_ids = list(game["players"].keys())
         if player_ids:
             game["current_selector"] = random.choice(player_ids)
@@ -311,16 +305,20 @@ class GameManager:
                             "answer_media": q.get("answer_media", {})
                         }
                 prices = [q["price"] for q in tr["categories"][0]["questions"]]
-                rounds.append({"name": tr["name"], "prices": prices, "categories": [c["name"] for c in tr["categories"]], "questions": questions})
-            return {"current_round": 0, "current_question": None, "answered_players": [], "last_correct_player": None, "phase": "playing", "rounds": rounds, "final": template.get("final", []), "current_selector": None, "answering_name": "", "final_bets": {}, "final_answers": {}}
-        return {"current_round": 0, "current_question": None, "answered_players": [], "phase": "playing", "rounds": [], "final": [], "current_selector": None, "answering_name": "", "final_bets": {}, "final_answers": {}}
+                rounds.append(
+                    {"name": tr["name"], "prices": prices, "categories": [c["name"] for c in tr["categories"]],
+                     "questions": questions})
+            return {"current_round": 0, "current_question": None, "answered_players": [], "last_correct_player": None,
+                    "phase": "playing", "rounds": rounds, "final": template.get("final", []), "current_selector": None,
+                    "answering_name": "", "final_bets": {}, "final_answers": {}}
+        return {"current_round": 0, "current_question": None, "answered_players": [], "phase": "playing", "rounds": [],
+                "final": [], "current_selector": None, "answering_name": "", "final_bets": {}, "final_answers": {}}
 
     async def _handle_select_question(self, room_code, player_id, message):
         game = self.games.get(room_code)
         room = self.rooms[room_code]
         if not game:
             return
-        # Host can always select
         if player_id != room.get("host"):
             return
         cat = message.get("category")
@@ -328,7 +326,8 @@ class GameManager:
         key = f"{cat}_{price}"
         q = game["rounds"][game["current_round"]]["questions"].get(key)
         if q:
-            game["current_question"] = {"category": cat, "price": price, "selected_by": player_id, "question": q, "status": "selected"}
+            game["current_question"] = {"category": cat, "price": price, "selected_by": player_id, "question": q,
+                                        "status": "selected"}
             await self.broadcast_game_state(room_code)
 
     async def _handle_open_question(self, room_code, player_id, message):
@@ -436,7 +435,6 @@ class GameManager:
         if 0 <= bet <= max(0, room["players"][player_id]["score"]):
             game["final_bets"][player_id] = bet
             room["players"][player_id]["has_bet"] = True
-            # Send only to host
             await self._send_final_update(room_code)
 
     async def _handle_show_final_question(self, room_code, player_id, message):
@@ -446,15 +444,17 @@ class GameManager:
             return
         action = message.get("action", "betting")
         game["final_phase"] = action
-        # Send to players only, not host
         for pid, p in room["players"].items():
             if p.get("is_host"): continue
             try:
                 players_info = {}
                 for pid2, p2 in room["players"].items():
-                    players_info[pid2] = {"name": p2["name"], "score": p2["score"], "has_bet": p2.get("has_bet", False), "has_answered": p2.get("has_answered", False), "is_host": False}
-                await p["websocket"].send_json({"type": "game_state", "game": game, "players": players_info, "host_name": room.get("host_name", "")})
-            except: pass
+                    players_info[pid2] = {"name": p2["name"], "score": p2["score"], "has_bet": p2.get("has_bet", False),
+                                          "has_answered": p2.get("has_answered", False), "is_host": False}
+                await p["websocket"].send_json({"type": "game_state", "game": game, "players": players_info,
+                                                "host_name": room.get("host_name", "")})
+            except:
+                pass
 
     async def _handle_final_answer(self, room_code, player_id, message):
         game = self.games.get(room_code)
@@ -473,38 +473,28 @@ class GameManager:
 
         results = message.get("results", {})
 
-        # Применяем результаты к очкам игроков
         for pid, correct in results.items():
-            # Ищем игрока по pid или по имени
             target_pid = pid
-            target_name = None
-
-            # Если pid не найден, ищем по имени из game["players"]
             if pid not in room["players"] and "players" in game:
-                # Проверяем, может pid - это имя?
                 for gpid, gp in game["players"].items():
                     if gp["name"] == pid:
                         target_pid = gpid
-                        target_name = gp["name"]
                         break
 
             if target_pid in room["players"] and not room["players"][target_pid].get("is_host"):
-                bet = game["final_bets"].get(target_pid, 0)
+                bet = game.get("final_bets", {}).get(target_pid, 0)
 
-                # Если игрок есть в game["players"], обновляем там
                 if "players" in game and target_pid in game["players"]:
                     if correct:
                         game["players"][target_pid]["score"] += bet
                     else:
                         game["players"][target_pid]["score"] -= bet
 
-                # Обновляем в room
                 if correct:
                     room["players"][target_pid]["score"] += bet
                 else:
                     room["players"][target_pid]["score"] -= bet
 
-        # Собираем финальные результаты для ВСЕХ игроков
         seen_names = set()
         final_scores = {}
 
@@ -513,10 +503,7 @@ class GameManager:
                 name = gp["name"]
                 if name not in seen_names:
                     seen_names.add(name)
-                    # Берем актуальный счет из room
-                    latest_score = gp.get("score", 0)
-                    if gpid in room["players"]:
-                        latest_score = room["players"][gpid].get("score", 0)
+                    latest_score = room["players"][gpid].get("score", 0) if gpid in room["players"] else gp.get("score", 0)
                     final_scores[gpid] = {"name": name, "score": latest_score}
         else:
             for pid, p in room["players"].items():
@@ -526,14 +513,11 @@ class GameManager:
                         seen_names.add(name)
                         final_scores[pid] = {"name": name, "score": p.get("score", 0)}
 
-        # ОТПРАВЛЯЕМ РЕЗУЛЬТАТЫ ВСЕМ ИГРОКАМ
         game['phase'] = 'finished'
         room['status'] = 'finished'
 
-        await self.broadcast_gamestate(room_code)
-
         scores_message = {'type': 'final_scores', 'scores': final_scores}
-        await self.broadcast(room_code, scores_message)  # последним — клиент гарантированно покажет таблицу
+        await self._broadcast(room_code, scores_message)
 
         print(f"✅ Final results applied for room {room_code}: {final_scores}")
 
@@ -558,12 +542,16 @@ class GameManager:
         if not game: return
         players_info = {}
         for pid, p in room["players"].items():
-            players_info[pid] = {"name": p["name"], "score": p["score"], "has_bet": p.get("has_bet", False), "has_answered": p.get("has_answered", False)}
+            players_info[pid] = {"name": p["name"], "score": p["score"], "has_bet": p.get("has_bet", False),
+                                 "has_answered": p.get("has_answered", False)}
         host_id = room.get("host")
         if host_id and host_id in room["players"]:
             try:
-                await room["players"][host_id]["websocket"].send_json({"type": "final_update", "players": players_info, "final_bets": game.get("final_bets", {}), "final_answers": game.get("final_answers", {})})
-            except: pass
+                await room["players"][host_id]["websocket"].send_json(
+                    {"type": "final_update", "players": players_info, "final_bets": game.get("final_bets", {}),
+                     "final_answers": game.get("final_answers", {})})
+            except:
+                pass
 
     async def broadcast_room_state(self, room_code: str):
         if room_code not in self.rooms:
@@ -572,7 +560,9 @@ class GameManager:
         players_info = {}
         for pid, p in room["players"].items():
             players_info[pid] = {"name": p["name"], "score": p["score"], "is_host": False}
-        state = {"type": "room_state", "status": room["status"], "players": players_info, "players_count": len(players_info), "max_players": 5, "creator": room["creator"], "host": room["host"], "host_name": room.get("host_name", "")}
+        state = {"type": "room_state", "status": room["status"], "players": players_info,
+                 "players_count": len(players_info), "max_players": 5, "creator": room["creator"], "host": room["host"],
+                 "host_name": room.get("host_name", "")}
         for pid, player in room["players"].items():
             if player.get("websocket") is None:
                 continue
@@ -590,27 +580,34 @@ class GameManager:
         if not game:
             await self.broadcast_room_state(room_code)
             return
-        # Use frozen players if game started
         if "players" in game:
             players_info = {}
             for pid, p in game["players"].items():
-                # ALWAYS sync score from room to frozen list
                 if pid in room["players"]:
                     game["players"][pid]["score"] = room["players"][pid].get("score", 0)
                     game["players"][pid]["can_answer"] = room["players"][pid].get("can_answer", False)
-                players_info[pid] = {"name": p["name"], "score": p.get("score", 0), "can_answer": p.get("can_answer", False), "is_host": False, "has_bet": p.get("has_bet", False), "has_answered": p.get("has_answered", False)}
+                players_info[pid] = {"name": p["name"], "score": p.get("score", 0),
+                                     "can_answer": p.get("can_answer", False), "is_host": False,
+                                     "has_bet": p.get("has_bet", False), "has_answered": p.get("has_answered", False)}
         else:
             players_info = {}
             for pid, p in room["players"].items():
-                players_info[pid] = {"name": p["name"], "score": p["score"], "can_answer": p.get("can_answer", False), "is_host": False, "has_bet": p.get("has_bet", False), "has_answered": p.get("has_answered", False), "online": pid in room["players"] and room["players"][pid].get("websocket") is not None}
+                players_info[pid] = {"name": p["name"], "score": p["score"], "can_answer": p.get("can_answer", False),
+                                     "is_host": False, "has_bet": p.get("has_bet", False),
+                                     "has_answered": p.get("has_answered", False),
+                                     "online": pid in room["players"] and room["players"][pid].get(
+                                         "websocket") is not None}
         sel_id = game.get("current_selector")
-        sel_name = room["players"][sel_id]["name"] if sel_id and sel_id in room["players"] else game["players"].get(sel_id, {}).get("name", "") if "players" in game else ""
+        sel_name = room["players"][sel_id]["name"] if sel_id and sel_id in room["players"] else game["players"].get(
+            sel_id, {}).get("name", "") if "players" in game else ""
         print(f"Broadcasting game_state to {len(room['players'])} players: {list(room['players'].keys())}, selector={sel_name}")
         for pid, player in room["players"].items():
             if player.get("websocket") is None:
-                continue  # Skip offline players
+                continue
             try:
-                state = {"type": "game_state", "game": game, "players": players_info, "current_player": pid, "current_selector": sel_id, "selector_name": sel_name, "host_name": room.get("host_name", ""), "answering_name": game.get("answering_name", ""), "final_phase": game.get("final_phase", "")}
+                state = {"type": "game_state", "game": game, "players": players_info, "current_player": pid,
+                         "current_selector": sel_id, "selector_name": sel_name, "host_name": room.get("host_name", ""),
+                         "answering_name": game.get("answering_name", ""), "final_phase": game.get("final_phase", "")}
                 await player["websocket"].send_json(state)
                 print(f"Sent game_state to {pid}")
             except Exception as e:

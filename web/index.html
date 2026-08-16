@@ -4200,26 +4200,91 @@ function showFinalAnswer(){
   window._fc = {};
 }
 function applyFinalResults() {
-    if (!window.ws || window.ws.readyState !== WebSocket.OPEN) { alert('Нет соединения с сервером'); return; }
-    window.ws.send(JSON.stringify({ type: 'final_results', results: window.fc || {} }));
-    document.getElementById('overlay').style.display = 'none';
+    console.log('=== applyFinalResults START ===');
+    
+    // ПРИНУДИТЕЛЬНО скрываем оверлей
+    var ov = document.getElementById('overlay');
+    ov.style.display = 'none';
+    ov.style.visibility = 'hidden';
+    ov.style.opacity = '0';
+    console.log('Overlay скрыт');
+    
+    // Собираем результаты
+    var scores = {};
+    
+    if (window._gameState && window._gameState.players) {
+        var players = window._gameState.players;
+        var bets = (window._gameState.game && window._gameState.game.final_bets) || {};
+        var results = window._fc || {};
+        
+        console.log('players:', players);
+        console.log('bets:', bets);
+        console.log('results:', results);
+        
+        for (var pid in players) {
+            if (players[pid] && !players[pid].is_host) {
+                var score = players[pid].score || 0;
+                // Если игрок ответил верно - добавляем ставку
+                if (results[pid] && bets[pid]) {
+                    score += bets[pid];
+                }
+                scores[pid] = { name: players[pid].name, score: score };
+            }
+        }
+    }
+    
+    console.log('scores:', scores);
+    
+    // Показываем результаты
+    showFinalResults(scores);
+    
+    // Отправляем на сервер
+    if (window.ws && window.ws.readyState === WebSocket.OPEN) {
+        window.ws.send(JSON.stringify({ type: 'final_results', results: window._fc || {} }));
+    }
+    
+    console.log('=== applyFinalResults END ===');
 }
 
 function showFinalResults(scores){
+    console.log('=== showFinalResults START ===');
+    
+    
     scores = scores || {};
+    
+    // Скрываем всё
     document.getElementById('lobby-screen').style.display = 'none';
     document.getElementById('overlay').style.display = 'none';
+    document.getElementById('editor-screen').style.display = 'none';
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('drafts-screen').style.display = 'none';
+    
     var sorted = [];
-    for (var id in scores) sorted.push({ name: scores[id].name, score: scores[id].score });
-  sorted.sort(function(a,b){return b.score - a.score});
-  var h = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;text-align:center"><div>';
-  h += '<h1 style="font-size:48px;margin-bottom:40px">RESULTS</h1>';
-  for(var i=0;i<sorted.length;i++){
-    h += '<div style="font-size:'+(i===0?'52px':'36px')+';font-weight:bold;color:'+(i===0?'#ff9800':'#fff')+';margin:15px 0">'+sorted[i].name+': '+sorted[i].score+'</div>';
-  }
-  h += '</div></div>';
-  document.getElementById('game-screen').innerHTML = h;
-  document.getElementById('game-screen').style.display = 'flex';
+    for (var id in scores) {
+        if (scores[id] && scores[id].name) {
+            sorted.push({ name: scores[id].name, score: scores[id].score || 0 });
+        }
+    }
+    sorted.sort(function(a,b){return b.score - a.score});
+    
+    var h = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;background:#1a1a2e;color:white;padding:20px"><div>';
+    h += '<h1 style="font-size:48px;margin-bottom:40px;color:#ff9800">🏆 РЕЗУЛЬТАТЫ 🏆</h1>';
+    
+    for(var i=0;i<sorted.length;i++){
+        var medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+        h += '<div style="font-size:'+(i===0?'52px':'36px')+';font-weight:bold;color:'+(i===0?'#ff9800':'#fff')+';margin:15px 0">'+medal+' '+sorted[i].name+': '+sorted[i].score+'</div>';
+    }
+    
+    h += '<button class="btn btn-blue" onclick="location.reload()" style="margin-top:40px;font-size:20px;padding:15px 40px">Играть снова</button>';
+    h += '</div></div>';
+    
+    var gameScreen = document.getElementById('game-screen');
+    gameScreen.innerHTML = h;
+    gameScreen.style.display = 'flex';
+    gameScreen.style.visibility = 'visible';
+    gameScreen.style.opacity = '1';
+    
+    console.log('=== showFinalResults END ===');
 }
 </script>
 </body>
