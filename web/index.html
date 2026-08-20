@@ -4536,8 +4536,9 @@ function renderGame(msg){
     lastCorrectPlayerName ||
     'Ведущий';
 
-  // Преобразуем ID в имя
-  const selectorName = getPlayerName(rawSelectorName) || rawSelectorName;
+  const selectorName = isFirstQuestion
+  ? 'Ведущий'
+  : (getPlayerName(rawSelectorName) || rawSelectorName);
 
   document.getElementById('gplayers').setAttribute(
     'data-selector-name',
@@ -4766,8 +4767,10 @@ function activateA(){window.ws.send(JSON.stringify({type:"open_question"}))}
 function evalA(correct){window.ws.send(JSON.stringify({type:"evaluate_answer",correct:correct}))}
 function openQ(){ws.send(JSON.stringify({type:'open_question'}))}
 function activateA(){ws.send(JSON.stringify({type:'open_question'}))}
+var isFirstQuestion = true;
 function evalA(correct) {
   if (correct) {
+    isFirstQuestion = false;
     const game = window._gameState && window._gameState.game;
     const players = window._gameState && window._gameState.players;
 
