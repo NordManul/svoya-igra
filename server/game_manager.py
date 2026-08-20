@@ -51,13 +51,29 @@ class GameManager:
         return True
 
     def load_draft(self, draft_id: str):
+        """
+        Загружает черновик по ID из папки drafts.
+        """
         import os
-        draft_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "drafts")
-        filepath = os.path.join(draft_dir, f"{draft_id}.json")
-        if os.path.exists(filepath):
-            with open(filepath, "r", encoding="utf-8") as f:
+        import json
+
+        # Путь к папке с черновиками (с ".." как в save_draft)
+        drafts_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "drafts")
+
+        # Формируем путь к файлу черновика
+        draft_file = os.path.join(drafts_dir, f"{draft_id}.json")
+
+        # Проверяем, существует ли файл
+        if not os.path.exists(draft_file):
+            return None
+
+        try:
+            # Читаем файл
+            with open(draft_file, "r", encoding="utf-8") as f:
                 return json.load(f)
-        return None
+        except Exception as e:
+            print(f"Error loading draft {draft_id}: {e}")
+            return None
 
     def list_drafts(self):
         import os
@@ -715,3 +731,33 @@ class GameManager:
             return {"error": "Room not found", "exists": False}
         room = self.rooms[room_code]
         return {"exists": True, "status": room["status"], "players_count": len(room["players"]), "max_players": 5}
+
+    def delete_draft(self, draft_id: str) -> bool:
+        """
+        Удаляет черновик по ID из папки drafts.
+        Возвращает True если черновик был удален, False если не найден.
+        """
+        import os
+
+        # Путь к папке с черновиками (с ".." как в save_draft)
+        drafts_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "drafts")
+
+        # Проверяем, существует ли папка
+        if not os.path.exists(drafts_dir):
+            return False
+
+        # Формируем путь к файлу черновика
+        draft_file = os.path.join(drafts_dir, f"{draft_id}.json")
+
+        # Проверяем, существует ли файл
+        if not os.path.exists(draft_file):
+            return False
+
+        try:
+            # Удаляем файл
+            os.remove(draft_file)
+            print(f"Draft {draft_id} deleted successfully")
+            return True
+        except Exception as e:
+            print(f"Error deleting draft {draft_id}: {e}")
+            return False

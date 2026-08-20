@@ -99,6 +99,24 @@ async def save_draft(data: dict):
     game_manager.save_draft(draft_id, template)
     return {"draft_id": draft_id, "status": "saved"}
 
+
+@app.post("/api/draft/delete")
+async def delete_draft(data: dict):
+    print(f"[DELETE DRAFT] Received data: {data}")  # Добавьте эту строку
+
+    draft_id = data.get("id")
+    if not draft_id:
+        return {"success": False, "message": "Draft ID is required"}
+
+    success = game_manager.delete_draft(draft_id)
+
+    if success:
+        print(f"[DELETE DRAFT] Draft {draft_id} deleted successfully")
+        return {"success": True}
+    else:
+        print(f"[DELETE DRAFT] Failed to delete draft {draft_id}")
+        return {"success": False, "message": "Draft not found"}
+
 @app.post("/api/draft/load")
 async def load_draft(data: dict):
     draft_id = data.get("id")
