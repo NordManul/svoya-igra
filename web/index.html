@@ -4234,6 +4234,12 @@ body {
 <script>
 var T,prices=[[100,200,300,400,500],[200,400,600,800,1000],[300,600,900,1200,1500]],currentRound=0,roomCode,playerId,joined=false;
 var lastCorrectPlayerName = 'Ведущий';
+var selectedPlayerIndex = -1; // Индекс выбранного игрока
+var keyboardMode = false; // Режим ввода с клавиатуры
+window._showScoreMessage = false;
+window._scoreMessageHTML = '';
+window._scoreMessageTimeout = null;
+window._selectionTimeout = null;
 
 function showEditor(){document.getElementById('start-screen').style.display='none';document.getElementById('editor-screen').style.display='block'}
 function showStartScreen() {
@@ -4329,6 +4335,226 @@ async function updateLobbyIP() {
   }
 }
 
+// Функция для изменения очков игрока
+function changePlayerScore(playerId, delta) {
+    if (!window.ws || window.ws.readyState !== WebSocket.OPEN) {
+        console.error('WebSocket not open');
+        return;
+    }
+
+    // Находим имя игрока
+    let playerName = '';
+    if (window._gameState && window._gameState.players) {
+        const players = window._gameState.players;
+        if (players[playerId] && players[playerId].name) {
+            playerName = players[playerId].name;
+        } else {
+            for (var id in players) {
+                if (id === playerId && players[id].name) {
+                    playerName = players[id].name;
+                    break;
+                }
+            }
+        }
+    }
+
+    console.log('[changePlayerScore] sending', playerId, delta);
+    window.ws.send(JSON.stringify({ type: 'adjust_score', player_id: playerId, delta: delta }));
+
+    // Показываем сообщение об изменении очков
+    var ansname = document.getElementById('ansname');
+    if (ansname && playerName) {
+        var sign = delta > 0 ? '+' : '';
+        var color = delta > 0 ? '#167d55' : '#e95d4f';
+
+        // Очищаем ВСЕ предыдущие таймеры
+        if (window._selectionTimeout) {
+            clearTimeout(window._selectionTimeout);
+            window._selectionTimeout = null;
+        }
+        if (window._scoreMessageTimeout) {
+            clearTimeout(window._scoreMessageTimeout);
+        }
+
+        // Устанавливаем флаг, чтобы renderGame не стирал сообщение
+        window._showScoreMessage = true;
+
+        // Вся надпись одного цвета
+        var messageText = 'Игрок ' + playerName + ' ' +
+                         (delta > 0 ? 'получил' : 'потерял') + ' ' +
+                         sign + delta + ' очков';
+
+        window._scoreMessageHTML = '<span style="color:' + color + ';font-weight:900;">' +
+                                   messageText + '</span>';
+
+        ansname.innerHTML = window._scoreMessageHTML;
+
+        // Через 3 секунды очищаем сообщение
+        window._scoreMessageTimeout = setTimeout(function() {
+            window._showScoreMessage = false;
+            window._scoreMessageHTML = '';
+            ansname.textContent = '';
+            ansname.style.color = '';
+        }, 3000);
+    }
+}
+// Функция для получения списка игроков (без ведущего)
+function getPlayersList() {
+    if (!window._gameState || !window._gameState.players) return [];
+
+    var players = [];
+
+    // Перебираем всех игроков из _gameState.players
+    for (var id in window._gameState.players) {
+        var p = window._gameState.players[id];
+
+        // Пропускаем ведущего
+        if (p.is_host === true || p.isHost === true) {
+            continue;
+        }
+
+        // Проверяем, не является ли это имя именем ведущего
+        var hostName = window._gameState.host_name ||
+                       document.getElementById('hname-display')?.textContent || '';
+
+        if (hostName && p.name === hostName) {
+            continue;
+        }
+
+        players.push({
+            id: id,  // ID игрока - это ключ объекта
+            name: p.name,
+            score: p.score || 0
+        });
+    }
+
+    return players;
+}
+// Функция для отображения подсказки
+function showScoreHint() {
+    var players = getPlayersList();
+    if (!players.length) return;
+
+    var hint = 'Выберите игрока (1-' + players.length + '):\n';
+    players.forEach(function(p, i) {
+        hint += (i + 1) + '. ' + p.name + ' (' + p.score + ')\n';
+    });
+    hint += '\nЗатем:\n+ - добавить очки\n- - снять очки\nEsc - отмена';
+
+    alert(hint);
+}
+
+// Обработчик клавиатуры
+document.addEventListener('keydown', function(e) {
+    // Игнорируем если фокус в input или textarea
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        return;
+    }
+
+    // Если игра не запущена
+    if (!window._gameState || !window._gameState.game) {
+        return;
+    }
+
+    var players = getPlayersList();
+    if (!players.length) return;
+
+    // Клавиша 'S' - показать подсказку
+    if (e.key === 's' || e.key === 'S' || e.key === 'ы' || e.key === 'Ы') {
+        showScoreHint();
+        return;
+    }
+
+    // Цифры 1-5 для выбора игрока
+        // Цифры 1-5 для выбора игрока
+    if (e.key >= '1' && e.key <= '5') {
+        selectedPlayerIndex = parseInt(e.key) - 1;
+        if (selectedPlayerIndex < players.length) {
+            keyboardMode = true;
+            console.log('Выбран игрок:', players[selectedPlayerIndex].name);
+
+            var ansname = document.getElementById('ansname');
+            if (ansname) {
+                // Очищаем ВСЕ предыдущие таймеры
+                if (window._scoreMessageTimeout) {
+                    clearTimeout(window._scoreMessageTimeout);
+                    window._scoreMessageTimeout = null;
+                }
+                if (window._selectionTimeout) {
+                    clearTimeout(window._selectionTimeout);
+                }
+
+                // Сбрасываем флаг сообщения об очках
+                window._showScoreMessage = false;
+                window._scoreMessageHTML = '';
+
+                ansname.textContent = 'Выбран: ' + players[selectedPlayerIndex].name;
+                ansname.style.color = '#ff9800'; // Оранжевый цвет для "Выбран"
+                ansname.style.fontWeight = 'bold';
+
+                // Через 3 секунды убираем надпись
+                window._selectionTimeout = setTimeout(function() {
+                    if (keyboardMode && selectedPlayerIndex >= 0 && selectedPlayerIndex < players.length) {
+                        ansname.textContent = '';
+                        ansname.style.color = '';
+                    }
+                }, 3000);
+            }
+        }
+        return;
+    }
+
+    // Если выбран игрок
+    if (keyboardMode && selectedPlayerIndex >= 0 && selectedPlayerIndex < players.length) {
+        // Клавиша '+' или '=' для добавления очков
+        if (e.key === '+' || e.key === '=') {
+            e.preventDefault();
+            var amount = prompt('Сколько очков добавить игроку ' + players[selectedPlayerIndex].name + '?');
+            if (amount !== null) {
+                var delta = parseInt(amount) || 0;
+                if (delta > 0) {
+                    changePlayerScore(players[selectedPlayerIndex].id, delta);
+                    console.log('Добавлено ' + delta + ' очков игроку ' + players[selectedPlayerIndex].name);
+                }
+            }
+            return;
+        }
+
+        // Клавиша '-' для снятия очков
+        if (e.key === '-' || e.key === '_') {
+            e.preventDefault();
+            var amount = prompt('Сколько очков снять у игрока ' + players[selectedPlayerIndex].name + '?');
+            if (amount !== null) {
+                var delta = parseInt(amount) || 0;
+                if (delta > 0) {
+                    changePlayerScore(players[selectedPlayerIndex].id, -delta);
+                    console.log('Снято ' + delta + ' очков у игрока ' + players[selectedPlayerIndex].name);
+                }
+            }
+            return;
+        }
+
+        // Esc - отмена
+        if (e.key === 'Escape') {
+            keyboardMode = false;
+            selectedPlayerIndex = -1;
+
+            // Очищаем таймер выбора
+            if (window._selectionTimeout) {
+                clearTimeout(window._selectionTimeout);
+            }
+
+            var ansname = document.getElementById('ansname');
+            if (ansname) {
+                ansname.textContent = '';
+                ansname.style.color = '';
+            }
+            console.log('Отмена');
+            return;
+        }
+    }
+});
+
 async function startGame() {
   const gameNameInput = document.querySelector('#editor-screen .sidebar-input#gameName') || document.getElementById('gameName');
   const hostNameInput = document.querySelector('#editor-screen .sidebar-input#hostName') || document.getElementById('hostName');
@@ -4418,6 +4644,21 @@ document.getElementById('lobby-screen').style.display = 'block';
         updateLobby(msg);
         return;
       }
+    if (msg.type === 'score_updated' || msg.type === 'scoreupdate') {
+        if (window._gameState) {
+            // Обновляем очки в _gameState.players
+            if (msg.players && window._gameState.players) {
+                for (var pid in msg.players) {
+                    if (window._gameState.players[pid]) {
+                        window._gameState.players[pid].score = msg.players[pid].score;
+                    }
+                }
+            }
+            // Перерисовываем игру
+            renderGame(window._gameState);
+        }
+        return;
+    }
 
       if (msg.type === 'game_state' || msg.type === 'gamestate') {
         const phase = msg.game?.phase;
@@ -4504,27 +4745,34 @@ function renderGame(msg){
   function getPlayerName(playerId) {
     if (!playerId) return '';
 
-    // Если это уже имя (есть в players)
-    for (var id in players) {
-      if (players[id].name === playerId) {
-        return playerId;
-      }
-    }
-
-    // Если это ID игрока
+    // Если playerId уже содержит имя игрока
     if (players[playerId] && players[playerId].name) {
-      return players[playerId].name;
+        return players[playerId].name;
     }
 
-    // Если ID без префикса, пробуем найти
+    // Ищем по ID
     for (var id in players) {
-      if (id === playerId || id.endsWith(playerId) || playerId.endsWith(id)) {
-        return players[id].name;
-      }
+        if (id === playerId && players[id].name) {
+            return players[id].name;
+        }
+    }
+
+    // Ищем по имени (если playerId это имя)
+    for (var id in players) {
+        if (players[id].name === playerId) {
+            return playerId;
+        }
+    }
+
+    // Проверяем частичное совпадение ID
+    for (var id in players) {
+        if (id.endsWith(playerId) || playerId.endsWith(id)) {
+            return players[id].name;
+        }
     }
 
     return playerId;
-  }
+}
 
   /*
     Если сервер прислал имя текущего отвечающего,
@@ -4558,9 +4806,24 @@ function renderGame(msg){
     lastCorrectPlayerName ||
     'Ведущий';
 
-  const selectorName = isFirstQuestion
-  ? 'Ведущий'
-  : (getPlayerName(rawSelectorName) || rawSelectorName);
+let selectorName;
+
+if (isFirstQuestion) {
+    selectorName = 'Ведущий';
+} else {
+    // Пытаемся получить имя игрока
+    selectorName = getPlayerName(rawSelectorName);
+
+    // Если не удалось найти имя, используем lastCorrectPlayerName
+    if (!selectorName || selectorName === rawSelectorName) {
+        selectorName = lastCorrectPlayerName || rawSelectorName;
+    }
+}
+
+document.getElementById('gplayers').setAttribute(
+    'data-selector-name',
+    selectorName
+);
 
   document.getElementById('gplayers').setAttribute(
     'data-selector-name',
@@ -4605,8 +4868,21 @@ if (gameJoinLink) {
   gameJoinLink.textContent = `Код комнаты: ${roomCode}`;
   gameJoinLink.style.display = 'flex';
 }
-  var ph='';for(var id in players){var p=players[id];if(p.is_host||p.name===msg.host_name)continue;ph+='<div class="player-badge" style="'+(p.online===false?'opacity:0.5':'')+'"><div class="pname">'+p.name+'</div><div class="pscore '+(p.score>=0?'plus':'minus')+'">'+p.score+'</div></div>'}
-  document.getElementById('gplayers').innerHTML=ph;
+var ph = '';
+    for (var id in players) {
+        var p = players[id];
+        if (p.is_host || p.name === msg.host_name) continue;
+
+        var actualScore = p.score || 0;
+        var scoreClass = actualScore >= 0 ? 'plus' : 'minus';
+
+        ph += '<div class="player-badge" style="' + (p.online === false ? 'opacity:0.5' : '') + '">' +
+              '<div class="pname">' + p.name + '</div>' +
+              '<div class="pscore ' + scoreClass + '">' + actualScore + '</div>' +
+              '</div>';
+    }
+    document.getElementById('gplayers').innerHTML = ph;
+
   var bh='';for(var j=0;j<round.categories.length;j++)bh+='<div class="bcell head">'+round.categories[j]+'</div>';
   for(var i=0;i<round.prices.length;i++){for(var j=0;j<round.categories.length;j++){var cat=round.categories[j],price=round.prices[i],key=cat+'_'+price,exists=round.questions[key],q=game.current_question,sel=q&&q.category===cat&&q.price===price;
     bh+='<div class="bcell'+(exists?'':' used')+(sel?' selected':'')+'" data-cat="'+cat+'" data-price="'+price+'" data-exists="'+(exists?1:0)+'" data-sel="'+(sel?1:0)+'">'+(exists?price:'')+'</div>'}}
@@ -4782,7 +5058,19 @@ if (gameJoinLink) {
 
   // РќРёР¶РЅСЏСЏ РїР°РЅРµР»СЊ вЂ” С‚РѕР»СЊРєРѕ РєРЅРѕРїРєР° Next Round
   document.getElementById('btn-next').style.display=!q&&!Object.keys(round.questions).length&&game.phase==='playing'?'inline-block':'none';
-  document.getElementById('ansname').textContent='';
+
+// Не стираем сообщение о изменении очков, если оно активно
+if (!window._showScoreMessage) {
+    document.getElementById('ansname').textContent='';
+    document.getElementById('ansname').style.color = '';
+} else if (window._scoreMessageHTML) {
+    document.getElementById('ansname').innerHTML = window._scoreMessageHTML;
+}
+    var playersList = getPlayersList();
+  if (selectedPlayerIndex >= playersList.length) {
+      selectedPlayerIndex = -1;
+      keyboardMode = false;
+  }
 }
 function selQ(cat,price){ws.send(JSON.stringify({type:'select_question',category:cat,price:price}))}
 function activateA(){window.ws.send(JSON.stringify({type:"open_question"}))}
@@ -4798,6 +5086,7 @@ function evalA(correct) {
 
     const rawAnsweringName =
       (game && game.answering_name) ||
+      (game && game.answeringname) ||
       window.lastAnsweringPlayerName ||
       '';
 
@@ -4805,15 +5094,21 @@ function evalA(correct) {
     let answeringName = rawAnsweringName;
 
     if (players) {
-      for (var id in players) {
-        if (id === rawAnsweringName && players[id].name) {
-          answeringName = players[id].name;
-          break;
+      // Ищем игрока по ID
+      if (players[rawAnsweringName] && players[rawAnsweringName].name) {
+        answeringName = players[rawAnsweringName].name;
+      } else {
+        // Ищем по имени
+        for (var id in players) {
+          if (players[id].name === rawAnsweringName) {
+            answeringName = rawAnsweringName;
+            break;
+          }
         }
       }
     }
 
-    if (answeringName) {
+    if (answeringName && answeringName !== 'Ведущий') {
       lastCorrectPlayerName = answeringName;
 
       const playersRow = document.getElementById('gplayers');

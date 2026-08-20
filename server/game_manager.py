@@ -190,6 +190,73 @@ class GameManager:
             await self._handle_final_results(room_code, player_id, message)
         elif msg_type == "ping":
             await self.send_to_player(room_code, player_id, {"type": "pong"})
+            # В методе handle_message, замените обработку adjust_score:
+
+        elif msg_type == 'adjust_score':
+
+            target_player_id = message.get('player_id')
+
+            delta = message.get('delta', 0)
+
+            room = self.rooms.get(room_code)
+
+            game = self.games.get(room_code)
+
+            if not room:
+                print(f"[adjust_score] FAIL: room {room_code} not found")
+
+                return
+
+            print(f"[adjust_score] room={room_code} target={target_player_id} delta={delta} "
+
+                  f"known_players={list(room['players'].keys())}")
+
+            if target_player_id not in room["players"]:
+                print(f"[adjust_score] FAIL: player_id {target_player_id} not in room players "
+
+                      f"(known ids: {list(room['players'].keys())})")
+
+                return
+
+            if room["players"][target_player_id].get("is_host", False):
+                print(f"[adjust_score] FAIL: target is host, ignoring")
+
+                return
+
+            new_score = self._set_score(room_code, target_player_id, delta)
+
+            print(f"[adjust_score] OK: player {target_player_id} new_score={new_score}")
+
+            await self.broadcast_game_state(room_code)
+
+    async def _broadcast_score_update(self, room_code: str, player_id: str, new_score: int):
+        """Отправляет обновление очков всем игрокам"""
+        room = self.rooms.get(room_code)
+        if not room:
+            return
+
+        # Отправляем всем игрокам обновленное состояние
+        for pid, player in room["players"].items():
+            if player.get("websocket") is None:
+                continue
+            try:
+                # Отправляем полное состояние игры
+                await self.broadcast_game_state(room_code)
+                break  # broadcast_game_state уже отправляет всем
+            except Exception as e:
+                print(f"ERROR sending score update to {pid}: {e}")
+
+    def _set_score(self, room_code: str, player_id: str, delta: int):
+        """Единая точка изменения очков — синхронизирует room и game одновременно."""
+        room = self.rooms.get(room_code)
+        game = self.games.get(room_code)
+        if not room or player_id not in room["players"]:
+            return None
+        new_score = room["players"][player_id].get("score", 0) + delta
+        room["players"][player_id]["score"] = new_score
+        if game and "players" in game and player_id in game["players"]:
+            game["players"][player_id]["score"] = new_score
+        return new_score
 
     async def _handle_join(self, room_code: str, player_id: str, message: dict):
         room = self.rooms[room_code]
@@ -371,23 +438,23 @@ class GameManager:
         if answering:
             price = game["current_question"]["price"]
             if is_correct:
-                room["players"][answering]["score"] += price
+                self._set_score(room_code, answering, price)  # было: room["players"][answering]["score"] += price
                 game["last_correct_player"] = answering
                 game["current_selector"] = answering
                 game["current_question"]["status"] = "answered"
                 game["answered_players"] = []
                 game["answering_name"] = ""
             else:
-                room["players"][answering]["score"] -= price
+                self._set_score(room_code, answering, -price)  # было: room["players"][answering]["score"] -= price
                 game["current_question"]["status"] = "open"
                 game["answered_players"] = []
                 game["answering_name"] = ""
-                for pid in room["players"]:
-                    if pid != answering:
-                        room["players"][pid]["can_answer"] = True
-                        if "players" in game and pid in game["players"]:
-                            game["players"][pid]["can_answer"] = True
-            await self.broadcast_game_state(room_code)
+            for pid in room["players"]:
+                if pid != answering:
+                    room["players"][pid]["can_answer"] = True
+                    if "players" in game and pid in game["players"]:
+                        game["players"][pid]["can_answer"] = True
+        await self.broadcast_game_state(room_code)
 
     async def _skip_to_final(self, room_code, player_id, message):
         game = self.games.get(room_code)
@@ -483,17 +550,7 @@ class GameManager:
 
             if target_pid in room["players"] and not room["players"][target_pid].get("is_host"):
                 bet = game.get("final_bets", {}).get(target_pid, 0)
-
-                if "players" in game and target_pid in game["players"]:
-                    if correct:
-                        game["players"][target_pid]["score"] += bet
-                    else:
-                        game["players"][target_pid]["score"] -= bet
-
-                if correct:
-                    room["players"][target_pid]["score"] += bet
-                else:
-                    room["players"][target_pid]["score"] -= bet
+                self._set_score(room_code, target_pid, bet if correct else -bet)
 
         seen_names = set()
         final_scores = {}
@@ -521,20 +578,93 @@ class GameManager:
 
         print(f"✅ Final results applied for room {room_code}: {final_scores}")
 
-    async def _broadcast(self, room_code: str, message: dict):
-        """Отправляет сообщение всем игрокам в комнате."""
+    async def broadcast_game_state(self, room_code: str):
         if room_code not in self.rooms:
             return
-
         room = self.rooms[room_code]
+        game = self.games.get(room_code)
+        if not game:
+            await self.broadcast_room_state(room_code)
+            return
+
+        players_info = {}
+
+        # Синхронизируем данные между game и room
+        if "players" in game:
+            for pid in list(game["players"].keys()):
+                # Получаем актуальные данные из room.players
+                if pid in room["players"]:
+                    actual_score = room["players"][pid].get("score", 0)
+                    actual_can_answer = room["players"][pid].get("can_answer", False)
+
+                    # Обновляем game.players
+                    game["players"][pid]["score"] = actual_score
+                    game["players"][pid]["can_answer"] = actual_can_answer
+
+                    # Создаем players_info с актуальными данными
+                    players_info[pid] = {
+                        "name": game["players"][pid]["name"],
+                        "score": actual_score,
+                        "can_answer": actual_can_answer,
+                        "is_host": False,
+                        "has_bet": game["players"][pid].get("has_bet", False),
+                        "has_answered": game["players"][pid].get("has_answered", False),
+                        "online": room["players"][pid].get("websocket") is not None
+                    }
+                else:
+                    # Если игрок есть в game, но нет в room (редкий случай)
+                    players_info[pid] = {
+                        "name": game["players"][pid]["name"],
+                        "score": game["players"][pid].get("score", 0),
+                        "can_answer": game["players"][pid].get("can_answer", False),
+                        "is_host": False,
+                        "has_bet": game["players"][pid].get("has_bet", False),
+                        "has_answered": game["players"][pid].get("has_answered", False),
+                        "online": False
+                    }
+        else:
+            # Если game.players нет, создаем из room.players
+            for pid, p in room["players"].items():
+                if not p.get("is_host"):
+                    players_info[pid] = {
+                        "name": p["name"],
+                        "score": p.get("score", 0),
+                        "can_answer": p.get("can_answer", False),
+                        "is_host": False,
+                        "has_bet": p.get("has_bet", False),
+                        "has_answered": p.get("has_answered", False),
+                        "online": p.get("websocket") is not None
+                    }
+
+        sel_id = game.get("current_selector")
+        sel_name = ""
+        if sel_id and sel_id in room["players"]:
+            sel_name = room["players"][sel_id].get("name", "")
+        elif "players" in game and sel_id in game["players"]:
+            sel_name = game["players"][sel_id].get("name", "")
+
+        print(
+            f"Broadcasting game_state to {len(room['players'])} players: {list(room['players'].keys())}, selector={sel_name}")
+
         for pid, player in room["players"].items():
-            websocket = player.get("websocket")
-            if websocket is None:
+            if player.get("websocket") is None:
                 continue
             try:
-                await websocket.send_json(message)
+                state = {
+                    "type": "game_state",
+                    "game": game,
+                    "players": players_info,
+                    "current_player": pid,
+                    "current_selector": sel_id,
+                    "selector_name": sel_name,
+                    "host_name": room.get("host_name", ""),
+                    "answering_name": game.get("answering_name", ""),
+                    "final_phase": game.get("final_phase", "")
+                }
+                await player["websocket"].send_json(state)
+                print(f"Sent game_state to {pid}")
             except Exception as e:
-                print(f"Ошибка отправки игроку {pid}: {e}")
+                print(f"ERROR sending to {pid}: {e}")
 
     async def _send_final_update(self, room_code):
         game = self.games.get(room_code)
@@ -567,47 +697,6 @@ class GameManager:
             if player.get("websocket") is None:
                 continue
             try:
-                await player["websocket"].send_json(state)
-                print(f"Sent game_state to {pid}")
-            except Exception as e:
-                print(f"ERROR sending to {pid}: {e}")
-
-    async def broadcast_game_state(self, room_code: str):
-        if room_code not in self.rooms:
-            return
-        room = self.rooms[room_code]
-        game = self.games.get(room_code)
-        if not game:
-            await self.broadcast_room_state(room_code)
-            return
-        if "players" in game:
-            players_info = {}
-            for pid, p in game["players"].items():
-                if pid in room["players"]:
-                    game["players"][pid]["score"] = room["players"][pid].get("score", 0)
-                    game["players"][pid]["can_answer"] = room["players"][pid].get("can_answer", False)
-                players_info[pid] = {"name": p["name"], "score": p.get("score", 0),
-                                     "can_answer": p.get("can_answer", False), "is_host": False,
-                                     "has_bet": p.get("has_bet", False), "has_answered": p.get("has_answered", False)}
-        else:
-            players_info = {}
-            for pid, p in room["players"].items():
-                players_info[pid] = {"name": p["name"], "score": p["score"], "can_answer": p.get("can_answer", False),
-                                     "is_host": False, "has_bet": p.get("has_bet", False),
-                                     "has_answered": p.get("has_answered", False),
-                                     "online": pid in room["players"] and room["players"][pid].get(
-                                         "websocket") is not None}
-        sel_id = game.get("current_selector")
-        sel_name = room["players"][sel_id]["name"] if sel_id and sel_id in room["players"] else game["players"].get(
-            sel_id, {}).get("name", "") if "players" in game else ""
-        print(f"Broadcasting game_state to {len(room['players'])} players: {list(room['players'].keys())}, selector={sel_name}")
-        for pid, player in room["players"].items():
-            if player.get("websocket") is None:
-                continue
-            try:
-                state = {"type": "game_state", "game": game, "players": players_info, "current_player": pid,
-                         "current_selector": sel_id, "selector_name": sel_name, "host_name": room.get("host_name", ""),
-                         "answering_name": game.get("answering_name", ""), "final_phase": game.get("final_phase", "")}
                 await player["websocket"].send_json(state)
                 print(f"Sent game_state to {pid}")
             except Exception as e:

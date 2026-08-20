@@ -122,12 +122,18 @@ async def websocket_endpoint(websocket: WebSocket, room_code: str, player_id: st
     try:
         while True:
             data = await websocket.receive_text()
-            message = json.loads(data)
-            await game_manager.handle_message(room_code, player_id, message)
+            try:
+                message = json.loads(data)
+                await game_manager.handle_message(room_code, player_id, message)
+            except Exception as e:
+                import traceback
+                print(f"[WS HANDLER ERROR] room={room_code} player={player_id} type={message.get('type') if isinstance(message, dict) else '?'} error={e}")
+                traceback.print_exc()
+                # НЕ выходим из цикла — соединение остаётся живым, слушаем дальше
     except WebSocketDisconnect:
         await game_manager.disconnect(room_code, player_id)
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"[WS CONNECTION ERROR] room={room_code} player={player_id} error={e}")
         await game_manager.disconnect(room_code, player_id)
 
 if __name__ == "__main__":
