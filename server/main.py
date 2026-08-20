@@ -58,6 +58,22 @@ async def get_my_ip():
     ip = socket.gethostbyname(hostname)
     return {"ip": ip}
 
+@app.get("/api/local_ip")
+async def get_local_ip():
+    import socket
+    try:
+        # Получаем IP адрес в локальной сети (более точный метод)
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return {"ip": ip}
+    except Exception as e:
+        # Fallback на старый метод
+        hostname = socket.gethostname()
+        ip = socket.gethostbyname(hostname)
+        return {"ip": ip}
+
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}

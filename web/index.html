@@ -4301,6 +4301,33 @@ async function loadDrafts() {
 }
 async function openDraft(id){var r=await fetch('/api/draft/load',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id})});var d=await r.json();if(d.template){T=d.template;document.getElementById('drafts-screen').style.display = 'none';showEditor();document.getElementById('gameName').value=T.name||'';switchRound(0)}}
 async function saveDraft(){T.name=document.getElementById('gameName').value||'My Game';var did=Math.random().toString(36).substr(2,8);await fetch('/api/draft/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:did,template:T})});alert('Draft saved!')}
+// Добавьте эти функции в глобальную область видимости (вне startGame)
+async function getLocalIP() {
+  try {
+    const response = await fetch('/api/local_ip');
+    if (response.ok) {
+      const data = await response.json();
+      return data.ip;
+    }
+  } catch (e) {
+    console.error('Ошибка получения IP:', e);
+  }
+  return null;
+}
+
+async function updateLobbyIP() {
+  const ip = await getLocalIP();
+  if (ip) {
+    document.getElementById('lobby-ip').innerHTML = `<b>http://${ip}:8000/player.html</b>`;
+  } else {
+    // Fallback на window.location.hostname
+    let fallbackIP = window.location.hostname;
+    if (fallbackIP === 'localhost' || fallbackIP === '127.0.0.1') {
+      fallbackIP = '127.0.0.1';
+    }
+    document.getElementById('lobby-ip').innerHTML = `<b>http://${fallbackIP}:8000/player.html</b>`;
+  }
+}
 
 async function startGame() {
   const gameNameInput = document.querySelector('#editor-screen .sidebar-input#gameName') || document.getElementById('gameName');
@@ -4339,10 +4366,7 @@ document.getElementById('lobby-screen').style.display = 'block';
     document.getElementById('rcodebig').textContent = roomCode;
     console.log('✅ Код комнаты установлен (startGame):', roomCode);
 
-    let ip = window.location.hostname;
-    if (ip === 'localhost') ip = '127.0.0.1';
-    document.getElementById('lobby-ip').innerHTML = `<b>http://${ip}:8000/player.html</b>`;
-    console.log('✅ IP установлен (startGame):', ip);
+    updateLobbyIP();
 
     const templateResponse = await fetch(
       `/api/save_template/${roomCode}`,
@@ -4439,9 +4463,7 @@ document.getElementById('lobby-screen').style.display = 'block';
     document.getElementById('rcodebig').textContent = roomCode;
   }
 
-  let ip = window.location.hostname;
-  if (ip === 'localhost') ip = '127.0.0.1';
-  document.getElementById('lobby-ip').innerHTML = `<b>http://${ip}:8000/player.html</b>`;
+  updateLobbyIP();
 
   const slots = document.querySelectorAll('.player-slot');
   const names = [];
