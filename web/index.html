@@ -3775,6 +3775,304 @@ body {
   bottom: -100px !important;    /* было -78px */
   left: 40px !important;        /* было 54px */
 }
+
+/* =========================================================
+   ФИНАЛ — кнопка «Показать ответ» строго по центру
+   ========================================================= */
+
+/* Контейнер действий финального окна занимает полную ширину */
+#overlay.final-bet-overlay #ov-btns {
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Кнопка «Показать ответ» по горизонтали строго в центре */
+#overlay.final-bet-overlay #ov-btns .question-show-answer,
+#overlay.final-bet-overlay #ov-btns .btn.btn-orange {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  align-self: center !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Если кнопка лежит не в #ov-btns, а напрямую в .overlay-box */
+#overlay.final-bet-overlay .overlay-box > .question-show-answer,
+#overlay.final-bet-overlay .overlay-box > .btn.btn-orange {
+  display: flex !important;
+  width: fit-content !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+      #overlay.final-bet-overlay .final-actions {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+#overlay.final-bet-overlay .final-actions .btn.btn-orange {
+  margin-left: 0 !important;
+}
+    /* =========================================================
+   ФИНАЛ — крупный текст в отметке ответов игроков
+   ========================================================= */
+
+/* Контейнер списка ответов */
+#overlay.final-bet-overlay #final-status {
+  width: min(100%, 760px) !important;
+}
+
+/* Одна строка: игрок / ставка / ответ */
+#overlay.final-bet-overlay .final-player-status {
+  grid-template-columns: minmax(150px, .8fr) minmax(160px, 1fr) minmax(240px, 1.5fr) !important;
+  gap: 16px !important;
+
+  padding: 18px 20px !important;
+
+  font-size: 21px !important;
+  line-height: 1.3 !important;
+}
+
+/* Имя игрока */
+#overlay.final-bet-overlay .final-player-name {
+  font-size: 23px !important;
+  font-weight: 900 !important;
+}
+
+/* Размер текста ставки */
+#overlay.final-bet-overlay .final-player-bet {
+  font-size: 21px !important;
+  font-weight: 800 !important;
+}
+
+/* Ответ игрока */
+#overlay.final-bet-overlay .final-player-answer {
+  font-size: 21px !important;
+  font-weight: 700 !important;
+
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  overflow-wrap: anywhere;
+}
+
+/* Если подписи создаются через <b> */
+#overlay.final-bet-overlay .final-player-status b {
+  font-size: 21px !important;
+  font-weight: 900 !important;
+}
+
+/* На узких экранах строка становится вертикальной */
+@media (max-width: 760px) {
+  #overlay.final-bet-overlay .final-player-status {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+    font-size: 19px !important;
+  }
+
+  #overlay.final-bet-overlay .final-player-name {
+    font-size: 21px !important;
+  }
+
+  #overlay.final-bet-overlay .final-player-bet,
+  #overlay.final-bet-overlay .final-player-answer,
+  #overlay.final-bet-overlay .final-player-status b {
+    font-size: 19px !important;
+  }
+}
+    #overlay.final-bet-overlay #final-status > p,
+#overlay.final-bet-overlay #final-status > div:not(.final-status-list) {
+  font-size: 23px !important;
+  line-height: 1.35 !important;
+}
+    #final-status,
+#final-status * {
+  font-size: 25px !important;
+  line-height: 1.3 !important;
+}
+
+#final-status b,
+#final-status strong {
+  font-size: 28px !important;
+}
+
+#final-status button,
+#final-status .btn {
+  min-height: 58px !important;
+  padding: 13px 22px !important;
+  font-size: 22px !important;
+}
+    /* =========================================================
+   ФИНАЛ — принудительно увеличить текст отметки ответов
+   ========================================================= */
+
+/* Общая область, где ведущий отмечает ответы */
+#overlay.final-bet-overlay #final-status {
+  width: min(100%, 860px) !important;
+  margin-top: 32px !important;
+
+  font-size: 25px !important;
+}
+
+/* Текст игроков, ставок, ответов и надписей внутри */
+#overlay.final-bet-overlay #final-status,
+#overlay.final-bet-overlay #final-status * {
+  font-size: 25px !important;
+  line-height: 1.3 !important;
+}
+
+/* Имя игрока и важные подписи крупнее */
+#overlay.final-bet-overlay #final-status b,
+#overlay.final-bet-overlay #final-status strong {
+  font-size: 28px !important;
+  font-weight: 900 !important;
+}
+
+/* Кнопки «Верно» / «Неверно», если они находятся в статусе */
+#overlay.final-bet-overlay #final-status button,
+#overlay.final-bet-overlay #final-status .btn {
+  min-height: 58px !important;
+  padding: 13px 22px !important;
+
+  font-size: 22px !important;
+  font-weight: 800 !important;
+}
+
+/* Карточки строк статуса: больше высоты и внутренних отступов */
+#overlay.final-bet-overlay #final-status > div,
+#overlay.final-bet-overlay #final-status .final-player-status {
+  padding: 18px 20px !important;
+}
+
+/* Адаптация для телефонов */
+@media (max-width: 760px) {
+  #overlay.final-bet-overlay #final-status,
+  #overlay.final-bet-overlay #final-status * {
+    font-size: 20px !important;
+  }
+
+  #overlay.final-bet-overlay #final-status b,
+  #overlay.final-bet-overlay #final-status strong {
+    font-size: 22px !important;
+  }
+}
+    /* =========================================================
+   ФИНАЛ — УВЕЛИЧЕНИЕ ШРИФТА В ТАБЛИЦЕ ОТВЕТОВ ИГРОКОВ
+   ========================================================= */
+
+/* Вся таблица с ответами игроков */
+#overlay.final-bet-overlay table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  margin: 15px 0 !important;
+}
+
+/* Заголовки колонок: Игрок, Ставка, Ответ, Верно */
+#overlay.final-bet-overlay table th {
+  font-size: 28px !important;
+  font-weight: 900 !important;
+  padding: 10px 20px !important;
+  text-align: center !important;
+  color: #20203a !important;
+  letter-spacing: 1px !important;
+}
+
+/* Ячейки с данными игроков */
+#overlay.final-bet-overlay table td {
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  padding: 10px 20px !important;
+  text-align: center !important;
+  color: #20203a !important;
+  line-height: 1.2 !important;
+}
+
+/* Имя игрока — самое крупное */
+#overlay.final-bet-overlay table td:first-child {
+  font-size: 28px !important;
+  font-weight: 900 !important;
+  text-align: left !important;
+}
+
+/* Чекбоксы "Верно" — крупнее */
+#overlay.final-bet-overlay table input[type="checkbox"] {
+  width: 32px !important;
+  height: 32px !important;
+  cursor: pointer !important;
+  transform: scale(1.3) !important;
+  margin: 5px !important;
+}
+
+/* Сама карточка с ответами */
+#overlay.final-bet-overlay .overlay-box {
+  width: min(850px, calc(100vw - 40px)) !important;
+  max-width: 850px !important;
+}
+
+/* Заголовок "ОТВЕТ" - зеленый цвет #167d55 */
+#overlay.final-bet-overlay .overlay-box > div[style*="color:#ff9800"] {
+  font-size: 32px !important;
+  margin: 15px 0 !important;
+  color: #167d55 !important;
+  font-weight: 900 !important;
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 760px) {
+  #overlay.final-bet-overlay table th {
+    font-size: 22px !important;
+    padding: 8px 12px !important;
+  }
+
+  #overlay.final-bet-overlay table td {
+    font-size: 20px !important;
+    padding: 8px 10px !important;
+  }
+
+  #overlay.final-bet-overlay table td:first-child {
+    font-size: 22px !important;
+  }
+
+  #overlay.final-bet-overlay .overlay-box > div[style*="color:#ff9800"] {
+    font-size: 26px !important;
+  }
+}
+    #game-screen .players-row {
+  top: 40px !important;  /* Подберите нужное значение */
+}
+
+    /* =========================================================
+   ФИНАЛ — ПРОКРУТКА ВСЕГО ЭКРАНА
+   ========================================================= */
+
+#overlay.final-bet-overlay {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  padding: 30px 20px !important;
+  min-height: 100vh !important;
+}
+
+#overlay.final-bet-overlay .overlay-box {
+  margin: auto 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+    /* =========================================================
+   ГЛАВНЫЙ ЭКРАН — СМЕЩЕНИЕ КНОПОК НИЖЕ
+   ========================================================= */
+
+#start-screen .start-buttons {
+  transform: translateY(80px) !important;  /* Было 50px, теперь 80px */
+}
 </style>
 </head>
 <body>
@@ -3959,7 +4257,15 @@ function switchRound(idx){currentRound=idx;var btns=document.querySelectorAll('#
 
 function renderRound(idx){var h='';if(idx<3){var round=T.rounds[idx];for(var c=0;c<round.categories.length;c++){var cat=round.categories[c];h+='<div class="theme-block"><input type="text" placeholder="Theme name" value="'+cat.name+'" onchange="T.rounds['+idx+'].categories['+c+'].name=this.value" style="font-weight:bold;font-size:16px;width:300px">';for(var q=0;q<cat.questions.length;q++){var qq=cat.questions[q];h+='<div class="q-item"><div class="q-price">'+qq.price+'</div><div class="q-row"><label>Q:</label><input type="text" placeholder="Question" value="'+esc(qq.text)+'" onchange="T.rounds['+idx+'].categories['+c+'].questions['+q+'].text=this.value"></div><div class="q-row"><label></label><div class="drop-zone" onclick="this.nextElementSibling.click()" ondrop="dropRound(event,'+idx+','+c+','+q+',\'q\',this)" ondragover="dragOver(event)" ondragleave="dragLeave(event)">'+(qq.qmedia?'File loaded':'Drop or click')+'</div><input type="file" style="display:none" onchange="upRound('+idx+','+c+','+q+',\'q\',this)">';if(qq.qmedia)h+='<img class="preview" src="'+qq.qmedia+'">';h+='</div><div class="q-row"><label>A:</label><input type="text" placeholder="Answer" value="'+esc(qq.answer)+'" onchange="T.rounds['+idx+'].categories['+c+'].questions['+q+'].answer=this.value"></div><div class="q-row"><label></label><div class="drop-zone" onclick="this.nextElementSibling.click()" ondrop="dropRound(event,'+idx+','+c+','+q+',\'a\',this)" ondragover="dragOver(event)" ondragleave="dragLeave(event)">'+(qq.amedia?'File loaded':'Drop or click')+'</div><input type="file" style="display:none" onchange="upRound('+idx+','+c+','+q+',\'a\',this)">';if(qq.amedia)h+='<img class="preview" src="'+qq.amedia+'">';h+='</div></div>'}h+='</div>'}}else{for(var i=0;i<T.final.length;i++){var f=T.final[i];h+='<div class="final-item"><input type="text" placeholder="Theme name" value="'+esc(f.name||'Theme '+(i+1))+'" onchange="T.final['+i+'].name=this.value" style="font-weight:bold;font-size:16px;width:300px"><br><div class="q-row"><label>Q:</label><input type="text" placeholder="Question" value="'+esc(f.text)+'" onchange="T.final['+i+'].text=this.value"></div><div class="q-row"><label></label><div class="drop-zone" onclick="this.nextElementSibling.click()" ondrop="dropFinal(event,'+i+',\'q\',this)" ondragover="dragOver(event)" ondragleave="dragLeave(event)">'+(f.qmedia?'File loaded':'Drop or click')+'</div><input type="file" style="display:none" onchange="upFinal('+i+',\'q\',this)">';if(f.qmedia)h+='<img class="preview" src="'+f.qmedia+'">';h+='</div><div class="q-row"><label>A:</label><input type="text" placeholder="Answer" value="'+esc(f.answer)+'" onchange="T.final['+i+'].answer=this.value"></div><div class="q-row"><label></label><div class="drop-zone" onclick="this.nextElementSibling.click()" ondrop="dropFinal(event,'+i+',\'a\',this)" ondragover="dragOver(event)" ondragleave="dragLeave(event)">'+(f.amedia?'File loaded':'Drop or click')+'</div><input type="file" style="display:none" onchange="upFinal('+i+',\'a\',this)">';if(f.amedia)h+='<img class="preview" src="'+f.amedia+'">';h+='</div></div>'}}document.getElementById('editor').innerHTML=h}
 function esc(s){return s.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-
+function escapeFinalHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 function dragOver(e){e.preventDefault();e.target.classList.add('dragover')}
 function dragLeave(e){e.target.classList.remove('dragover')}
 function dropRound(e,r,c,q,type,zone){e.preventDefault();zone.classList.remove('dragover');var f=e.dataTransfer.files[0];if(!f)return;var inp=zone.nextElementSibling;var dt=new DataTransfer();dt.items.add(f);inp.files=dt.files;upRound(r,c,q,type,inp)}
@@ -4616,12 +4922,6 @@ function updateFinalOverlay(msg) {
 
   var game = window._gameState.game;
 
-  /*
-    Сервер присылает ключи в snake_case:
-    final_bets и final_answers.
-    Дополнительно оставлены варианты без подчёркиваний,
-    чтобы старые сообщения тоже не ломали интерфейс.
-  */
   var incomingBets =
     msg.final_bets ??
     msg.finalbets ??
@@ -4648,12 +4948,19 @@ function updateFinalOverlay(msg) {
   for (var id in players) {
     var player = players[id];
 
-    if (player.is_host) continue;
+    // Пропускаем ведущего (все возможные способы определения)
+    if (
+      player.is_host === true ||
+      player.isHost === true ||
+      player.role === 'host' ||
+      player.role === 'ведущий' ||
+      player.name === msg.host_name ||
+      player.name === window._gameState.host_name ||
+      player.name === document.getElementById('hname-display')?.textContent
+    ) {
+      continue;
+    }
 
-    /*
-      Ставки и ответы могут храниться либо по id игрока,
-      либо по имени игрока. Проверяем оба варианта.
-    */
     var rawBet =
       incomingBets[id] ??
       incomingBets[player.id] ??
@@ -4670,10 +4977,6 @@ function updateFinalOverlay(msg) {
       player.answer ??
       null;
 
-    /*
-      Если сервер хранит ставку/ответ объектом,
-      берём значение из наиболее вероятных ключей.
-    */
     var bet = rawBet;
     if (rawBet && typeof rawBet === 'object') {
       bet =
@@ -4695,9 +4998,6 @@ function updateFinalOverlay(msg) {
         '';
     }
 
-    /*
-      Поддержка статусов сервера в snake_case.
-    */
     var hasBet =
       player.has_bet === true ||
       player.hasbet === true ||
@@ -4709,12 +5009,12 @@ function updateFinalOverlay(msg) {
       answer !== null && answer !== undefined && answer !== '';
 
     var betText = hasBet
-      ? 'Ставка: <b>' + escapeFinalHtml(bet) + '</b>'
-      : 'Ставка не сделана';
+      ? 'Ставка сделана'
+      : 'Ожидание ставки...';
 
     var answerText = hasAnswered
-      ? 'Ответ: <b>' + escapeFinalHtml(answer || 'Получен') + '</b>'
-      : 'Ответа пока нет';
+      ? 'Ответ получен'
+      : 'Ожидание ответа...';
 
     html +=
       '<div class="final-player-status">' +
@@ -4739,11 +5039,24 @@ function showFinalAnswer(){
   var h = '<div class="overlay-box"><h2>'+t.name+'</h2>';
   h += '<div style="font-size:24px;color:#ff9800;font-weight:bold;margin:15px 0">ОТВЕТ: '+t.answer+'</div>';
   h += '<table style="width:100%;margin:15px 0"><tr><th>Игрок</th><th>Ставка</th><th>Ответ</th><th>Верно</th></tr>';
+
   for(var id in players){
     var p = players[id];
-    if(p.is_host) continue;
+
+    // Пропускаем ведущего
+    if (
+      p.is_host === true ||
+      p.isHost === true ||
+      p.role === 'host' ||
+      p.role === 'ведущий' ||
+      p.name === window._gameState.host_name
+    ) {
+      continue;
+    }
+
     h += '<tr><td>'+p.name+'</td><td>'+(bets[id]||0)+'</td><td>'+(answers[id]||'-')+'</td><td><input type="checkbox" id="cb_'+id+'" onchange="window._fc=window._fc||{};window._fc[\''+id+'\']=this.checked"></td></tr>';
   }
+
   h += '</table><button class="btn btn-green" onclick="applyFinalResults()">ПОКАЗАТЬ РЕЗУЛЬТАТЫ</button></div>';
   document.getElementById('overlay').innerHTML = h;
   document.getElementById('overlay').style.display = 'flex';
