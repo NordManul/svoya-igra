@@ -4478,31 +4478,71 @@ if(typeof _lastBoardHTML==='undefined'){window._lastBoardHTML='';}
 function renderGame(msg){
   window._gameState = msg;
   var game=msg.game,players=msg.players;
-/*
-  Если сервер прислал имя текущего отвечающего,
-  сохраняем его только при статусе answering.
-*/
-if (game.current_question &&
-    game.current_question.status === 'answering' &&
-    game.answering_name) {
-  window.lastAnsweringPlayerName = game.answering_name;
-}
 
-/*
-  После правильного ответа сервер может очистить answeringname.
-  Тогда используем последнее запомненное имя.
-*/
-const selectorName =
-  game.lastcorrectname ||
-  game.lastCorrectName ||
-  game.last_correct_name ||
-  lastCorrectPlayerName ||
-  'Ведущий';
+  function getPlayerName(playerId) {
+    if (!playerId) return '';
 
-document.getElementById('gplayers').setAttribute(
-  'data-selector-name',
-  selectorName
-);
+    // Если это уже имя (есть в players)
+    for (var id in players) {
+      if (players[id].name === playerId) {
+        return playerId;
+      }
+    }
+
+    // Если это ID игрока
+    if (players[playerId] && players[playerId].name) {
+      return players[playerId].name;
+    }
+
+    // Если ID без префикса, пробуем найти
+    for (var id in players) {
+      if (id === playerId || id.endsWith(playerId) || playerId.endsWith(id)) {
+        return players[id].name;
+      }
+    }
+
+    return playerId;
+  }
+
+  /*
+    Если сервер прислал имя текущего отвечающего,
+    сохраняем его при статусе answering.
+  */
+  if (game.current_question &&
+      game.current_question.status === 'answering') {
+    window.lastAnsweringPlayerName =
+      getPlayerName(game.answering_name) ||
+      getPlayerName(game.answeringname) ||
+      getPlayerName(game.answeringName) ||
+      getPlayerName(game.current_answerer) ||
+      getPlayerName(game.current_player) ||
+      getPlayerName(game.answering_player) ||
+      window.lastAnsweringPlayerName;
+  }
+
+  /*
+    После правильного ответа сервер может прислать
+    имя в разных полях.
+  */
+  const rawSelectorName =
+    game.lastcorrectname ||
+    game.lastCorrectName ||
+    game.last_correct_name ||
+    game.last_correct ||
+    game.correct_name ||
+    game.selector ||
+    game.selecting_player ||
+    game.current_selector ||
+    lastCorrectPlayerName ||
+    'Ведущий';
+
+  // Преобразуем ID в имя
+  const selectorName = getPlayerName(rawSelectorName) || rawSelectorName;
+
+  document.getElementById('gplayers').setAttribute(
+    'data-selector-name',
+    selectorName
+  );
 
 document.getElementById('game-screen').classList.toggle(
   'final-game-screen',
@@ -4722,21 +4762,31 @@ if (gameJoinLink) {
   document.getElementById('ansname').textContent='';
 }
 function selQ(cat,price){ws.send(JSON.stringify({type:'select_question',category:cat,price:price}))}
-function activateA(){window.ws.send(JSON.stringify({type:"open_question"}))} function evalA(correct){window.ws.send(JSON.stringify({type:"evaluate_answer",correct:correct}))}
+function activateA(){window.ws.send(JSON.stringify({type:"open_question"}))}
+function evalA(correct){window.ws.send(JSON.stringify({type:"evaluate_answer",correct:correct}))}
 function openQ(){ws.send(JSON.stringify({type:'open_question'}))}
 function activateA(){ws.send(JSON.stringify({type:'open_question'}))}
 function evalA(correct) {
-  /*
-    До отправки ответа сохраняем имя игрока,
-    который сейчас отвечал на вопрос.
-  */
   if (correct) {
     const game = window._gameState && window._gameState.game;
+    const players = window._gameState && window._gameState.players;
 
-    const answeringName =
+    const rawAnsweringName =
       (game && game.answering_name) ||
       window.lastAnsweringPlayerName ||
       '';
+
+    // Преобразуем ID в имя
+    let answeringName = rawAnsweringName;
+
+    if (players) {
+      for (var id in players) {
+        if (id === rawAnsweringName && players[id].name) {
+          answeringName = players[id].name;
+          break;
+        }
+      }
+    }
 
     if (answeringName) {
       lastCorrectPlayerName = answeringName;
@@ -4756,7 +4806,6 @@ function evalA(correct) {
     return;
   }
 
-  /* Оставляем исходный формат сообщения вашему серверу */
   window.ws.send(JSON.stringify({
     type: 'evaluate_answer',
     correct: correct
