@@ -3225,6 +3225,556 @@ body {
     overflow-wrap: anywhere;
   }
 }
+/* =========================================================
+   ФИНАЛЬНЫЕ РЕЗУЛЬТАТЫ
+   ========================================================= */
+
+#game-screen.results-game-screen {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 10000 !important;
+  display: flex !important;
+  min-height: 100vh !important;
+  overflow: hidden !important;
+  background: #fff9ef !important;
+  color: #20203a !important;
+}
+
+/* Полная страница результатов */
+.results-page {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  padding: 64px 56px 42px;
+  box-sizing: border-box;
+  background: #fff9ef;
+  color: #20203a;
+  font-family: "Manrope", Arial, sans-serif;
+}
+
+/* Фоновые круги */
+.results-circle {
+  position: absolute;
+  z-index: 0;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.results-circle-yellow {
+  top: -62px;
+  left: -70px;
+  width: 230px;
+  height: 230px;
+  background: #ffe8a3;
+}
+
+.results-circle-lilac {
+  top: 28px;
+  right: -62px;
+  width: 408px;
+  height: 408px;
+  background: #eee4f7;
+}
+
+.results-circle-mint {
+  bottom: -120px;
+  left: 58px;
+  width: 310px;
+  height: 310px;
+  background: #d9f5df;
+}
+
+/* Логотип и заголовок */
+.results-header {
+  position: relative;
+  z-index: 2;
+}
+
+.results-brand {
+  color: #20203a;
+  font-family: "Unbounded", Arial, sans-serif;
+  font-size: clamp(22px, 2.4vw, 35px);
+  font-weight: 700;
+  letter-spacing: -1.5px;
+}
+
+.results-header h1 {
+  margin: 26px 0 0 22px;
+  color: #090914;
+  font-size: clamp(34px, 4vw, 58px);
+  font-weight: 800;
+  letter-spacing: -2.8px;
+  line-height: 1;
+}
+
+/* Центральные результаты */
+.results-main {
+  position: relative;
+  z-index: 2;
+  width: min(680px, 100%);
+  margin: 16px auto 0;
+}
+
+.results-winner {
+  margin-bottom: 45px;
+  color: #090914;
+  text-align: center;
+}
+
+.results-winner-title {
+  font-size: clamp(25px, 3vw, 40px);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.results-winner-title span {
+  font-weight: 900;
+}
+
+.results-winner-score {
+  margin-top: 8px;
+  font-size: clamp(36px, 4vw, 58px);
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* Рейтинг игроков */
+.results-list {
+  display: grid;
+  gap: 24px;
+  margin: 0;
+  padding-left: 50px;
+}
+
+.results-row {
+  display: grid;
+  grid-template-columns: minmax(170px, 1fr) auto;
+  align-items: center;
+  gap: 22px;
+
+  color: #11111d;
+  font-size: clamp(25px, 3vw, 43px);
+  font-weight: 800;
+}
+
+.results-row::marker {
+  color: #11111d;
+  font-size: .92em;
+  font-weight: 800;
+}
+
+/* Цветная карточка имени */
+.results-name {
+  min-height: 56px;
+  padding: 10px 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+
+  border: 2px solid #25233d;
+  border-radius: 17px;
+  background: #ffcdb8;
+  box-shadow: 0 6px 0 #25233d;
+
+  color: #20203a;
+  font-size: clamp(21px, 2.4vw, 33px);
+  font-weight: 800;
+  letter-spacing: 4px;
+  line-height: 1.1;
+}
+
+/* Цвета по местам */
+.results-row:nth-child(1) .results-name {
+  background: #ffcdb8;
+}
+
+.results-row:nth-child(2) .results-name {
+  background: #ffe78a;
+}
+
+.results-row:nth-child(3) .results-name {
+  background: #94c9ef;
+}
+
+.results-row:nth-child(4) .results-name {
+  background: #abe7d0;
+}
+
+.results-row:nth-child(5) .results-name {
+  background: #ddd0f5;
+}
+
+.results-score {
+  min-width: 155px;
+  color: #090914;
+  font-size: clamp(27px, 3.2vw, 45px);
+  font-weight: 800;
+  line-height: 1;
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* Кнопка создания новой игры */
+.results-restart {
+  position: absolute;
+  z-index: 3;
+  right: 56px;
+  bottom: 28px;
+
+  min-height: 62px;
+  padding: 13px 26px;
+
+  border: 2px solid #25233d;
+  border-radius: 15px;
+  background: #fffdf9;
+  box-shadow: 0 5px 0 #25233d;
+
+  color: #20203a;
+  cursor: pointer;
+  font-family: "Manrope", Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: .3px;
+}
+
+.results-restart:hover {
+  transform: translateY(2px);
+  box-shadow: 0 3px 0 #25233d;
+}
+
+/* Декоративные мышки и звезда */
+.results-left-mouse,
+.results-right-mouse,
+.results-sparkle {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.results-left-mouse {
+  bottom: 110px;
+  left: 75px;
+  width: 380px;
+  height: auto;
+  line-height: 0;
+}
+
+.results-right-mouse {
+  top: 40px;
+  right: 30px;
+  width: 400px;
+  height: auto;
+  line-height: 0;
+  transform: none;
+}
+
+.results-left-mouse img,
+.results-right-mouse img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.results-sparkle {
+  right: 28%;
+  bottom: 29%;
+  color: #f2a09c;
+  font-size: 82px;
+  line-height: 1;
+}
+
+/* Маленькие экраны */
+@media (max-width: 850px) {
+  #game-screen.results-game-screen,
+  .results-page {
+    overflow-y: auto !important;
+  }
+
+  .results-page {
+    min-height: 100%;
+    padding: 38px 24px 44px;
+  }
+
+  .results-main {
+    margin-top: 50px;
+  }
+
+  .results-left-mouse,
+  .results-right-mouse,
+  .results-sparkle {
+    display: none;
+  }
+
+  .results-restart {
+    position: static;
+    display: block;
+    width: min(360px, 100%);
+    margin: 42px auto 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .results-header h1 {
+    margin-left: 0;
+  }
+
+  .results-list {
+    gap: 15px;
+    padding-left: 38px;
+  }
+
+  .results-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+  }
+
+  .results-name {
+    min-height: 48px;
+    padding: 9px 12px;
+    font-size: 19px;
+    letter-spacing: 1.5px;
+  }
+
+  .results-score {
+    min-width: auto;
+    font-size: 23px;
+  }
+}
+
+    /* =========================================================
+   РЕЗУЛЬТАТЫ — финальные правки
+   ========================================================= */
+
+/* Все тексты на экране результатов */
+#game-screen.results-game-screen,
+#game-screen.results-game-screen * {
+  color: #25213b !important;
+}
+
+
+/* Зелёный круг: крупнее и немного выше */
+.results-circle-mint {
+  bottom: -78px !important;
+  left: 54px !important;
+  width: 370px !important;
+  height: 370px !important;
+  background: #d9f5df !important;
+}
+
+/* Заголовок «Игра окончена» — Unbounded */
+.results-header h1 {
+  font-family: "Unbounded", Arial, sans-serif !important;
+  font-weight: 700 !important;
+  color: #25213b !important;
+  letter-spacing: -1.8px !important;
+}
+
+/* Логотип «Своя игра» */
+.results-brand {
+  color: #25213b !important;
+}
+
+/* Победитель и счёт */
+.results-winner,
+.results-winner-title,
+.results-winner-title span,
+.results-winner-score {
+  color: #25213b !important;
+}
+
+/* Сетка строки: место — карточка имени — очки */
+.results-row {
+  grid-template-columns: 46px minmax(170px, 1fr) auto !important;
+  gap: 18px !important;
+}
+
+/* Номер места */
+.results-place {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  color: #25213b !important;
+  font-size: clamp(27px, 3vw, 43px);
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* Имя и очки */
+.results-name,
+.results-score {
+  color: #25213b !important;
+}
+
+/* Чтобы стандартные номера ol не дублировались */
+.results-list {
+  list-style: none !important;
+  padding-left: 0 !important;
+}
+
+/* Кнопка */
+.results-restart {
+  color: #25213b !important;
+  border-color: #25213b !important;
+  box-shadow: 0 5px 0 #25213b !important;
+}
+
+/* Адаптация списка для мобильного */
+@media (max-width: 520px) {
+  .results-row {
+    grid-template-columns: 32px minmax(0, 1fr) auto !important;
+    gap: 9px !important;
+  }
+
+  .results-place {
+    font-size: 22px;
+  }
+}
+    /* =========================================================
+   РЕЗУЛЬТАТЫ — уточнение оформления
+   ========================================================= */
+
+/* «Игра окончена» немного компактнее */
+.results-header h1 {
+  font-size: clamp(30px, 3.4vw, 48px) !important;
+  font-family: "Unbounded", Arial, sans-serif !important;
+  font-weight: 700 !important;
+  color: #25213b !important;
+}
+
+/* Лиловый круг оставляем и слегка сдвигаем влево */
+.results-circle-lilac {
+  display: block !important;
+  top: 28px !important;
+  right: 18px !important;
+  width: 408px !important;
+  height: 408px !important;
+  background: #eee4f7 !important;
+}
+
+.results-circle-blue {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+/* Звезда сохраняет исходный коралловый цвет */
+.results-sparkle {
+  color: #f2a09c !important;
+}
+    /* Коралловая звезда на экране результатов */
+#game-screen.results-game-screen .results-sparkle {
+  color: #f2a09c !important;
+}
+/* =========================================================
+   ФИНАЛЬНОЕ ИСПРАВЛЕНИЕ
+   ========================================================= */
+
+/* Скрываем голубой круг только на экране результатов */
+#game-screen.results-game-screen::after {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+  content: none !important;
+}
+
+/* Оставляем голубой круг на финальном игровом экране */
+#game-screen.final-game-screen:not(.results-game-screen)::after {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 480px !important;
+  height: 480px !important;
+  background: #c8e6f5 !important;
+  content: "" !important;
+}
+
+/* Желтый круг */
+#game-screen.results-game-screen .results-circle-yellow {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Лиловый круг */
+#game-screen.results-game-screen .results-circle-lilac {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Мятный круг */
+#game-screen.results-game-screen .results-circle-mint {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+    /* =========================================================
+   УВЕЛИЧЕНИЕ КРУГОВ И ЗВЕЗДЫ НА ЭКРАНЕ РЕЗУЛЬТАТОВ
+   ========================================================= */
+
+/* Желтый круг - больше */
+#game-screen.results-game-screen .results-circle-yellow {
+  width: 320px !important;      /* было 230px */
+  height: 320px !important;     /* было 230px */
+  top: -80px !important;        /* было -62px */
+  left: -90px !important;       /* было -70px */
+}
+
+/* Лиловый круг - больше */
+#game-screen.results-game-screen .results-circle-lilac {
+  width: 520px !important;      /* было 408px */
+  height: 520px !important;     /* было 408px */
+  top: 10px !important;         /* было 28px */
+  right: -80px !important;      /* было -62px */
+}
+
+/* Коралловая звезда - больше */
+#game-screen.results-game-screen .results-sparkle {
+  font-size: 110px !important;  /* было 82px */
+  right: 26% !important;        /* было 28% */
+  bottom: 28% !important;       /* было 29% */
+}
+
+/* Для мобильных устройств */
+@media (max-width: 850px) {
+  #game-screen.results-game-screen .results-circle-yellow {
+    width: 200px !important;
+    height: 200px !important;
+    top: -50px !important;
+    left: -50px !important;
+  }
+
+  #game-screen.results-game-screen .results-circle-lilac {
+    width: 350px !important;
+    height: 350px !important;
+    top: 20px !important;
+    right: -60px !important;
+  }
+
+  #game-screen.results-game-screen .results-sparkle {
+    font-size: 70px !important;
+  }
+}
+    /* =========================================================
+   УВЕЛИЧЕНИЕ МЯТНОГО КРУГА НА ЭКРАНЕ РЕЗУЛЬТАТОВ
+   ========================================================= */
+
+/* Мятный круг - больше */
+#game-screen.results-game-screen .results-circle-mint {
+  width: 420px !important;      /* было 370px */
+  height: 420px !important;     /* было 370px */
+  bottom: -100px !important;    /* было -78px */
+  left: 40px !important;        /* было 54px */
+}
 </style>
 </head>
 <body>
@@ -4246,44 +4796,118 @@ function applyFinalResults() {
     console.log('=== applyFinalResults END ===');
 }
 
-function showFinalResults(scores){
+function showFinalResults(scores) {
     console.log('=== showFinalResults START ===');
-    
-    
+
     scores = scores || {};
-    
-    // Скрываем всё
+
+    // Скрываем остальные экраны — оставляем как было
     document.getElementById('lobby-screen').style.display = 'none';
     document.getElementById('overlay').style.display = 'none';
     document.getElementById('editor-screen').style.display = 'none';
     document.getElementById('start-screen').style.display = 'none';
     document.getElementById('drafts-screen').style.display = 'none';
-    
+
+    // Собираем и сортируем текущие результаты игры
     var sorted = [];
+
     for (var id in scores) {
         if (scores[id] && scores[id].name) {
-            sorted.push({ name: scores[id].name, score: scores[id].score || 0 });
+            sorted.push({
+                name: scores[id].name,
+                score: scores[id].score || 0
+            });
         }
     }
-    sorted.sort(function(a,b){return b.score - a.score});
-    
-    var h = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;background:#1a1a2e;color:white;padding:20px"><div>';
-    h += '<h1 style="font-size:48px;margin-bottom:40px;color:#ff9800">🏆 РЕЗУЛЬТАТЫ 🏆</h1>';
-    
-    for(var i=0;i<sorted.length;i++){
-        var medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
-        h += '<div style="font-size:'+(i===0?'52px':'36px')+';font-weight:bold;color:'+(i===0?'#ff9800':'#fff')+';margin:15px 0">'+medal+' '+sorted[i].name+': '+sorted[i].score+'</div>';
+
+    sorted.sort(function(a, b) {
+        return b.score - a.score;
+    });
+
+    var winner = sorted.length ? sorted[0] : {
+        name: '—',
+        score: 0
+    };
+
+    // Формат очков: 104000 → 104 000
+    function formatScore(score) {
+        return Number(score || 0).toLocaleString('ru-RU');
     }
-    
-    h += '<button class="btn btn-blue" onclick="location.reload()" style="margin-top:40px;font-size:20px;padding:15px 40px">Играть снова</button>';
-    h += '</div></div>';
-    
+
+    var h = `
+        <div class="results-page">
+            <div class="results-circle results-circle-yellow"></div>
+            <div class="results-circle results-circle-lilac"></div>
+            <div class="results-circle results-circle-mint"></div>
+
+            <div class="results-left-mouse">
+    <img
+        src="web/assets/slazzer-preview-43zv1.jpg"
+        alt=""
+        aria-hidden="true"
+    >
+</div>
+
+<div class="results-right-mouse">
+    <img
+        src="web/assets/slazzer-preview-ohsw0.jpg"
+        alt=""
+        aria-hidden="true"
+    >
+</div>
+            <div class="results-sparkle">✦</div>
+
+            <header class="results-header">
+                <div class="results-brand">Своя игра</div>
+                <h1>Игра окончена</h1>
+            </header>
+
+            <main class="results-main">
+                <section class="results-winner">
+                    <div class="results-winner-title">
+                        Победитель: <span>${winner.name}</span>
+                    </div>
+                    <div class="results-winner-score">
+                        ${formatScore(winner.score)}
+                    </div>
+                </section>
+
+                <ol class="results-list" style="list-style:none">
+                    ${sorted.map(function(player, index) {
+                        return `
+                            <li class="results-row">
+    <span class="results-place">${index + 1}.</span>
+
+    <span class="results-name">${player.name}</span>
+
+    <span class="results-score">
+        ${formatScore(player.score)}
+    </span>
+</li>
+                        `;
+                    }).join('')}
+                </ol>
+            </main>
+
+            <button
+                class="results-restart"
+                type="button"
+                onclick="location.reload()"
+            >
+                Создать новую игру
+            </button>
+        </div>
+    `;
+
     var gameScreen = document.getElementById('game-screen');
+
+    // Удаляем только старый результат, а не логику подсчёта
+    gameScreen.classList.add('results-game-screen');
     gameScreen.innerHTML = h;
     gameScreen.style.display = 'flex';
     gameScreen.style.visibility = 'visible';
     gameScreen.style.opacity = '1';
-    
+
     console.log('=== showFinalResults END ===');
 }
 </script>
