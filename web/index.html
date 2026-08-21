@@ -4377,6 +4377,7 @@ window._showScoreMessage = false;
 window._scoreMessageHTML = '';
 window._scoreMessageTimeout = null;
 window._selectionTimeout = null;
+window._manualScoreUpdate = null;
 
 function showEditor(){document.getElementById('start-screen').style.display='none';document.getElementById('editor-screen').style.display='block'}
 function showStartScreen() {
@@ -4626,6 +4627,7 @@ function editPlayerScore(playerId) {
 
     // Сохраняем текущее значение
     var originalScore = currentScore;
+    var isFinishing = false; // Флаг для предотвращения множественного вызова
 
     // Делаем элемент редактируемым
     targetElement.classList.add('editing');
@@ -4642,10 +4644,19 @@ function editPlayerScore(playerId) {
 
     // Обработчик завершения редактирования
     function finishEditing(save) {
+        if (isFinishing) return; // Предотвращаем множественный вызов
+        isFinishing = true;
+
         targetElement.classList.remove('editing');
         targetElement.setAttribute('contenteditable', 'false');
         targetElement.removeEventListener('blur', onBlur);
         targetElement.removeEventListener('keydown', onKeyDown);
+
+        // Получаем текст и очищаем его
+        var cleanText = targetElement.textContent
+            .replace(/[\n\r]+/g, '')
+            .replace(/\s+/g, '')
+            .trim();
 
         if (!save) {
             // Восстанавливаем исходное значение
@@ -4653,7 +4664,7 @@ function editPlayerScore(playerId) {
             return;
         }
 
-                var newScore = parseInt(targetElement.textContent.trim());
+        var newScore = parseInt(cleanText, 10);
 
         if (isNaN(newScore)) {
             targetElement.textContent = originalScore;
@@ -4664,27 +4675,42 @@ function editPlayerScore(playerId) {
         var delta = newScore - originalScore;
 
         if (delta !== 0) {
-            // Отправляем изменение на сервер
-            changePlayerScore(actualPlayerId, delta);
-
-            // Обновляем локальное состояние
+            // Обновляем локальное состояние НЕМЕДЛЕННО
             if (window._gameState && window._gameState.players) {
-                var players = window._gameState.players;
-                if (players[actualPlayerId]) {
-                    players[actualPlayerId].score = newScore;
+                var gamePlayers = window._gameState.players;
+                if (gamePlayers[actualPlayerId]) {
+                    gamePlayers[actualPlayerId].score = newScore;
                 } else {
-                    // Ищем по имени
-                    for (var pid in players) {
-                        if (players[pid].name === playerName) {
-                            players[pid].score = newScore;
+                    for (var pid in gamePlayers) {
+                        if (gamePlayers[pid].name === playerName) {
+                            gamePlayers[pid].score = newScore;
                             break;
                         }
                     }
                 }
             }
 
+            // Устанавливаем флаг, чтобы renderGame не перезаписал значение
+            window._manualScoreUpdate = {
+                playerId: actualPlayerId,
+                score: newScore,
+                timestamp: Date.now()
+            };
+
             // Обновляем отображение
             targetElement.textContent = newScore;
+
+            // Обновляем класс (плюс/минус)
+            targetElement.className = 'pscore ' + (newScore >= 0 ? 'plus' : 'minus');
+
+            // Отправляем изменение на сервер
+            if (window.ws && window.ws.readyState === WebSocket.OPEN) {
+                window.ws.send(JSON.stringify({
+                    type: 'adjust_score',
+                    player_id: actualPlayerId,
+                    delta: delta
+                }));
+            }
         } else {
             targetElement.textContent = originalScore;
         }
@@ -4697,9 +4723,21 @@ function editPlayerScore(playerId) {
     function onKeyDown(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
+            e.stopPropagation();
+
+            // Получаем текущий текст и очищаем его от переносов
+            var cleanText = targetElement.textContent
+                .replace(/[\n\r]+/g, '')
+                .replace(/\s+/g, '')
+                .trim();
+
+            // Устанавливаем очищенный текст перед сохранением
+            targetElement.textContent = cleanText;
+
             finishEditing(true);
         } else if (e.key === 'Escape') {
             e.preventDefault();
+            e.stopPropagation();
             finishEditing(false);
         }
     }
@@ -4730,7 +4768,25 @@ function changePlayerScore(playerId, delta) {
         }
     }
 
-    console.log('[changePlayerScore] sending', playerId, delta);
+        console.log('[changePlayerScore] sending', playerId, delta);
+
+    // Вычисляем новое значение счета
+    var currentScore = 0;
+    if (window._gameState && window._gameState.players) {
+        var players = window._gameState.players;
+        if (players[playerId] && players[playerId].score !== undefined) {
+            currentScore = players[playerId].score;
+        }
+    }
+    var newScore = currentScore + delta;
+
+    // Сохраняем ручное обновление
+    window._manualScoreUpdate = {
+        playerId: playerId,
+        score: newScore,
+        timestamp: Date.now()
+    };
+
     window.ws.send(JSON.stringify({ type: 'adjust_score', player_id: playerId, delta: delta }));
 
     // Показываем сообщение об изменении очков
@@ -5017,7 +5073,7 @@ document.getElementById('lobby-screen').style.display = 'block';
         updateLobby(msg);
         return;
       }
-    if (msg.type === 'score_updated' || msg.type === 'scoreupdate') {
+        if (msg.type === 'score_updated' || msg.type === 'scoreupdate') {
         if (window._gameState) {
             // Обновляем очки в _gameState.players
             if (msg.players && window._gameState.players) {
@@ -5027,16 +5083,29 @@ document.getElementById('lobby-screen').style.display = 'block';
                     }
                 }
             }
+            // Очищаем ручное обновление, так как сервер подтвердил
+            window._manualScoreUpdate = null;
             // Перерисовываем игру
             renderGame(window._gameState);
         }
         return;
     }
 
-      if (msg.type === 'game_state' || msg.type === 'gamestate') {
+            if (msg.type === 'game_state' || msg.type === 'gamestate') {
         const phase = msg.game?.phase;
 
         if (phase === 'finished') return;
+
+        // Очищаем ручное обновление при получении нового состояния
+        if (window._manualScoreUpdate) {
+            // Проверяем, совпадает ли счет с сервера с нашим ручным обновлением
+            var manualUpdate = window._manualScoreUpdate;
+            var serverPlayers = msg.players || {};
+            if (serverPlayers[manualUpdate.playerId] &&
+                serverPlayers[manualUpdate.playerId].score === manualUpdate.score) {
+                window._manualScoreUpdate = null;
+            }
+        }
 
         if (phase !== 'playing' && phase !== 'final') {
           updateLobby(msg);
@@ -5248,7 +5317,15 @@ var ph = '';
         var p = players[id];
         if (p.is_host || p.name === msg.host_name) continue;
 
-        var actualScore = p.score || 0;
+                var actualScore = p.score || 0;
+
+        // Проверяем, есть ли ручное обновление счета
+        if (window._manualScoreUpdate &&
+            window._manualScoreUpdate.playerId === id &&
+            Date.now() - window._manualScoreUpdate.timestamp < 5000) {
+            actualScore = window._manualScoreUpdate.score;
+        }
+
         var scoreClass = actualScore >= 0 ? 'plus' : 'minus';
 
         ph += '<div class="player-badge" style="' + (p.online === false ? 'opacity:0.5' : '') + '">' +
