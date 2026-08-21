@@ -567,6 +567,9 @@ class GameManager:
             if target_pid in room["players"] and not room["players"][target_pid].get("is_host"):
                 bet = game.get("final_bets", {}).get(target_pid, 0)
                 self._set_score(room_code, target_pid, bet if correct else -bet)
+            else:
+                print(f"[final_results] SKIPPED: pid={pid} not resolved to a known player "
+                      f"(room ids={list(room['players'].keys())})")
 
         seen_names = set()
         final_scores = {}

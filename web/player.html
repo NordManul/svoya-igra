@@ -3,62 +3,633 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Svoya Igra - Player</title>
+<title>Своя игра — Игрок</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=Unbounded:wght@600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial;background:#1a1a2e;color:white;height:100vh;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
-.screen{display:none;text-align:center;width:100%;padding:20px}
-.screen.active{display:block}
-input{padding:15px;margin:10px 0;border-radius:10px;border:1px solid #555;background:#2a2a4a;color:white;font-size:18px;width:100%;max-width:300px}
-.btn{padding:15px 30px;border:none;border-radius:10px;font-size:18px;font-weight:bold;cursor:pointer;width:100%;max-width:300px}
-.btn-blue{background:#007bff;color:white}.btn-green{background:#28a745;color:white}
-.score{font-size:60px;font-weight:bold;margin:20px 0}
-.answer-btn{width:220px;height:220px;border-radius:50%;border:none;font-size:28px;font-weight:bold;cursor:pointer;transition:all 0.3s;margin:30px auto}
-.answer-btn.waiting{background:#555;color:#888;cursor:not-allowed}
-.answer-btn.active{background:#28a745;color:white;animation:pulse 1s infinite;box-shadow:0 0 40px #28a745}
-.answer-btn.pressed{background:#ff9800;color:black}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
-.status{font-size:22px;margin:20px 0;padding:15px;border-radius:10px}
-.status.waiting{background:#555}.status.ready{background:#28a745;animation:pulse 1s infinite}
-.status.answered{background:#ff9800}
+/* ============ БАЗОВЫЕ СТИЛИ ============ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  min-height: 100vh;
+  background: #fff8ed;
+  color: #20203a;
+  font-family: "Manrope", Arial, sans-serif;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Декоративные круги на фоне */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::before {
+  width: 400px;
+  height: 400px;
+  top: -100px;
+  left: -90px;
+  background: #ffe8a3;
+}
+
+body::after {
+  width: 500px;
+  height: 500px;
+  right: -160px;
+  bottom: -140px;
+  background: #d9f5df;
+}
+
+/* Все экраны поверх декора */
+.screen {
+  display: none;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  width: 100%;
+  padding: 20px;
+}
+
+.screen.active {
+  display: block;
+}
+
+/* ============ КАРТОЧКИ ЭКРАНОВ ============ */
+.player-card {
+  width: min(520px, 100%);
+  margin: 0 auto;
+  padding: 40px 36px 34px;
+  box-sizing: border-box;
+  border: 3px solid #25233d;
+  border-radius: 28px;
+  background: #fffdf9;
+  box-shadow: 0 8px 0 #25233d;
+  text-align: center;
+}
+
+.player-card h1,
+.player-card h2 {
+  margin: 0 0 20px;
+  font-family: "Unbounded", Arial, sans-serif;
+  font-size: clamp(24px, 3.5vw, 34px);
+  font-weight: 700;
+  letter-spacing: -1.3px;
+  color: #25213b;
+}
+
+.player-card h3 {
+  margin: 0 0 16px;
+  font-family: "Unbounded", Arial, sans-serif;
+  font-size: clamp(19px, 2.5vw, 26px);
+  font-weight: 700;
+  color: #25213b;
+}
+
+.player-card p {
+  margin: 0 0 16px;
+  color: #55536a;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+/* ============ ПОЛЯ ВВОДА ============ */
+.player-input {
+  width: 100%;
+  max-width: 300px;
+  padding: 14px 18px;
+  margin: 8px 0;
+  box-sizing: border-box;
+  border: 2px solid #25233d;
+  border-radius: 14px;
+  background: #fffdf9;
+  color: #20203a;
+  font-family: "Manrope", Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.player-input:focus {
+  outline: none;
+  border-color: #167d5d;
+  box-shadow: 0 0 0 3px rgba(22, 125, 93, 0.15);
+}
+
+.player-input::placeholder {
+  color: #9a97a8;
+  font-weight: 500;
+}
+
+/* ============ КНОПКИ ============ */
+.btn {
+  display: inline-block;
+  width: 100%;
+  max-width: 300px;
+  min-height: 58px;
+  padding: 14px 24px;
+  margin: 8px 0;
+  border: 2px solid #25233d;
+  border-radius: 16px;
+  cursor: pointer;
+  font-family: "Manrope", Arial, sans-serif;
+  font-size: clamp(16px, 2vw, 19px);
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  transition: transform 0.14s ease, box-shadow 0.14s ease, filter 0.14s ease;
+}
+
+.btn:hover {
+  transform: translateY(2px);
+}
+
+.btn:active {
+  transform: translateY(4px);
+  box-shadow: none !important;
+}
+
+.btn-blue {
+  background: #94c9ef;
+  color: #20203a;
+  box-shadow: 0 5px 0 #25233d;
+  border-color: #25233d;
+}
+
+.btn-green {
+  background: #abe7d0;
+  color: #167d5d;
+  box-shadow: 0 5px 0 #167d5d;
+  border-color: #167d5d;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 5px 0 #25233d;
+}
+
+/* ============ ОШИБКА ============ */
+.error-msg {
+  margin-top: 10px;
+  color: #e95d4f;
+  font-size: 15px;
+  font-weight: 700;
+  min-height: 22px;
+}
+
+/* ============ ЭКРАН ВХОДА ============ */
+#login .player-card {
+  max-width: 440px;
+}
+
+#login .player-card h1 {
+  margin-bottom: 28px;
+}
+
+/* ============ ЭКРАН ОЖИДАНИЯ ============ */
+#waiting .player-card {
+  max-width: 460px;
+}
+
+.room-code-display {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 180px;
+  min-height: 64px;
+  margin: 16px 0 20px;
+  padding: 12px 28px;
+  box-sizing: border-box;
+  border: 2px solid #25233d;
+  border-radius: 18px;
+  background: #ddd0f5;
+  color: #20203a;
+  font-family: "Manrope", Arial, sans-serif;
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 900;
+  letter-spacing: 3px;
+}
+
+/* Индикатор загрузки */
+.loading-dots {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.loading-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #abe7d0;
+  border: 2px solid #25233d;
+  animation: pulse-dot 1.2s ease-in-out infinite;
+}
+
+.loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.7);
+    opacity: 0.5;
+  }
+}
+
+/* ============ ЭКРАН ИГРЫ ============ */
+#game {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* Счёт - шрифт Space Grotesk, крупнее и округлее */
+.score-display {
+  font-family: "Space Grotesk", "Manrope", Arial, sans-serif;
+  font-size: clamp(72px, 11vw, 110px);
+  font-weight: 700;
+  margin: 10px 0 20px;
+  color: #090914;
+  letter-spacing: -3px;
+  line-height: 1;
+}
+
+/* Статус */
+.status {
+  font-size: clamp(17px, 2.5vw, 22px);
+  font-weight: 800;
+  margin: 15px 0;
+  padding: 14px 20px;
+  border-radius: 16px;
+  border: 2px solid #25233d;
+  box-shadow: 0 4px 0 #25233d;
+  transition: all 0.3s ease;
+}
+
+.status.waiting {
+  background: #ddd0f5;
+  color: #20203a;
+}
+
+/* НАЖМИТЕ ДЛЯ ОТВЕТА - пастельный розовый */
+.status.ready {
+  background: #ffd6e8;
+  color: #20203a;
+  border-color: #25233d;
+  box-shadow: 0 4px 0 #25233d;
+  animation: pulse-status 1s infinite;
+}
+
+/* ВЕРНО - мятный цвет */
+.status.answered {
+  background: #abe7d0;
+  color: #167d5d;
+  border-color: #167d5d;
+  box-shadow: 0 4px 0 #167d5d;
+}
+
+/* Сделайте вашу ставку и Введите ваш финальный ответ - пастельный розовый */
+.status.ready {
+  background: #ffd6e8;
+  color: #20203a;
+  border-color: #25233d;
+  box-shadow: 0 4px 0 #25233d;
+  animation: pulse-status 1s infinite;
+}
+
+@keyframes pulse-status {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+/* Кнопка ответа - МЯТНАЯ, БОЛЬШЕ */
+.answer-btn {
+  display: block;
+  width: 240px;
+  height: 240px;
+  margin: 25px auto;
+  border-radius: 50%;
+  border: 3px solid #25233d;
+  cursor: pointer;
+  font-family: "Manrope", Arial, sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+}
+
+.answer-btn.waiting {
+  background: #e4ded6;
+  color: #9a97a8;
+  cursor: not-allowed;
+  box-shadow: 0 6px 0 #25233d;
+}
+
+/* Кнопка ответа активная - МЯТНАЯ */
+.answer-btn.active {
+  background: #abe7d0;
+  color: #167d5d;
+  border-color: #167d5d;
+  box-shadow: 0 6px 0 #167d5d, 0 0 40px rgba(171, 231, 208, 0.6);
+  animation: pulse-answer 1s infinite;
+}
+
+.answer-btn.pressed {
+  background: #ffcdb8;
+  color: #20203a;
+  box-shadow: 0 6px 0 #25233d;
+}
+
+@keyframes pulse-answer {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* ============ ФИНАЛЬНЫЕ СТАВКИ ============ */
+#bet-area,
+#final-answer-area {
+  margin: 20px 0;
+}
+
+#bet-area h3,
+#final-answer-area h3 {
+  margin: 0 0 12px;
+  font-family: "Unbounded", Arial, sans-serif;
+  font-size: clamp(18px, 2.5vw, 24px);
+  font-weight: 700;
+  color: #25213b;
+}
+
+.max-bet-display {
+  display: inline-block;
+  margin: 0 0 15px;
+  padding: 8px 20px;
+  border: 2px solid #25233d;
+  border-radius: 12px;
+  background: #ffe78a;
+  color: #20203a;
+  font-family: "Manrope", Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+#bet-input,
+#final-answer {
+  width: 100%;
+  max-width: 280px;
+  padding: 14px 18px;
+  margin: 8px 0;
+  box-sizing: border-box;
+  border: 2px solid #25233d;
+  border-radius: 14px;
+  background: #fffdf9;
+  color: #20203a;
+  font-family: "Manrope", Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  text-align: center;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#bet-input:focus,
+#final-answer:focus {
+  outline: none;
+  border-color: #167d5d;
+  box-shadow: 0 0 0 3px rgba(22, 125, 93, 0.15);
+}
+
+/* ============ АДАПТИВНОСТЬ ============ */
+/* Десктоп: круги крупнее */
+@media (min-width: 1200px) {
+  body::before {
+    width: 500px;
+    height: 500px;
+    top: -120px;
+    left: -100px;
+  }
+
+  body::after {
+    width: 600px;
+    height: 600px;
+    right: -200px;
+    bottom: -180px;
+  }
+}
+
+@media (max-width: 600px) {
+  .screen {
+    padding: 12px;
+  }
+
+  .player-card {
+    padding: 26px 18px 22px;
+    border-radius: 20px;
+    border-width: 2px;
+    box-shadow: 0 5px 0 #25233d;
+  }
+
+  .player-card h1,
+  .player-card h2 {
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+
+  .player-input {
+    font-size: 16px;
+    padding: 12px 15px;
+    border-radius: 12px;
+  }
+
+  .btn {
+    min-height: 50px;
+    padding: 12px 20px;
+    font-size: 15px;
+    border-radius: 14px;
+  }
+
+  /* Кнопка ответа БОЛЬШЕ на мобильных */
+  .answer-btn {
+    width: 200px;
+    height: 200px;
+    font-size: 24px;
+  }
+
+  /* Счёт ЕЩЁ БОЛЬШЕ на мобильных */
+  .score-display {
+    font-size: clamp(75px, 20vw, 110px);
+    letter-spacing: -2px;
+  }
+
+  .status {
+    font-size: 15px;
+    padding: 12px 16px;
+    border-radius: 12px;
+  }
+
+  .room-code-display {
+    min-height: 50px;
+    font-size: 22px;
+    padding: 8px 20px;
+  }
+
+  /* Мобильные: круги - жёлтый больше */
+  body::before {
+    width: 280px;
+    height: 280px;
+    top: -60px;
+    left: -60px;
+  }
+
+  /* Мятный круг тоже больше */
+  body::after {
+    width: 320px;
+    height: 320px;
+    right: -120px;
+    bottom: -100px;
+  }
+}
+
+@media (max-width: 360px) {
+  /* Кнопка ответа ещё больше на маленьких экранах */
+  .answer-btn {
+    width: 180px;
+    height: 180px;
+    font-size: 22px;
+  }
+
+  /* Счёт ЕЩЁ БОЛЬШЕ на маленьких экранах */
+  .score-display {
+    font-size: clamp(65px, 17vw, 91px);
+    letter-spacing: -2px;
+  }
+
+  .player-card {
+    padding: 20px 14px 18px;
+  }
+
+  /* Жёлтый круг ещё больше на маленьких экранах */
+  body::before {
+    width: 240px;
+    height: 240px;
+    top: -50px;
+    left: -50px;
+  }
+
+  /* Мятный круг ещё больше */
+  body::after {
+    width: 280px;
+    height: 280px;
+    right: -100px;
+    bottom: -80px;
+  }
+}
 </style>
 </head>
 <body>
 
+<!-- ЭКРАН ВХОДА -->
 <div id="login" class="screen active">
-<h1>Join Game</h1>
-<input id="room" placeholder="Room code" maxlength="6" autocomplete="off">
-<script>
-  var params = new URLSearchParams(window.location.search);
-  var roomFromUrl = params.get('room');
-  if(roomFromUrl) document.getElementById('room').value = roomFromUrl;
-</script>
-<input id="name" placeholder="Your name" autocomplete="off">
-<button class="btn btn-blue" onclick="join()">Join</button>
-<p id="err" style="color:#dc3545;margin-top:10px"></p>
+  <div class="player-card">
+    <h1>Своя игра</h1>
+    <p>Введите код комнаты и ваше имя</p>
+
+    <input class="player-input" id="room" placeholder="Код комнаты" maxlength="6" autocomplete="off">
+    <script>
+      var params = new URLSearchParams(window.location.search);
+      var roomFromUrl = params.get('room');
+      if(roomFromUrl) document.getElementById('room').value = roomFromUrl;
+    </script>
+
+    <input class="player-input" id="name" placeholder="Ваше имя" autocomplete="off">
+
+    <button class="btn btn-green" onclick="join()">Подключиться</button>
+
+    <p class="error-msg" id="err"></p>
+  </div>
 </div>
 
+<!-- ЭКРАН ОЖИДАНИЯ -->
 <div id="waiting" class="screen">
-<h2>Waiting for game...</h2>
-<p>Room: <b id="wroom"></b></p>
-<p id="wplayers"></p>
+  <div class="player-card">
+    <h2>Ожидание игры...</h2>
+    <p>Код комнаты:</p>
+    <div class="room-code-display" id="wroom">------</div>
+    <p id="wplayers" style="font-size:18px;font-weight:800;color:#20203a;"></p>
+
+    <div class="loading-dots">
+      <div class="loading-dot"></div>
+      <div class="loading-dot"></div>
+      <div class="loading-dot"></div>
+    </div>
+  </div>
 </div>
 
+<!-- ЭКРАН ИГРЫ -->
 <div id="game" class="screen">
-<div class="score" id="myscore">0</div>
-<div class="status waiting" id="status">Waiting...</div>
-<div id="bet-area" style="display:none">
-  <h3>FINAL - Place your bet</h3>
-  <p style="color:#aaa">Max: <span id="max-bet"></span></p>
-  <input type="number" id="bet-input" placeholder="Your bet" min="0" style="font-size:24px;text-align:center;width:200px">
-  <br><button class="btn btn-green" onclick="placeBet()">SUBMIT BET</button>
-</div>
-<div id="final-answer-area" style="display:none">
-  <h3>FINAL - Your answer</h3>
-  <input id="final-answer" placeholder="Your answer" style="font-size:20px;width:90%">
-  <br><button class="btn btn-green" onclick="submitFinalAnswer()">SUBMIT ANSWER</button>
-</div>
-<button class="answer-btn waiting" id="ansbtn" disabled onclick="answer()">ANSWER</button>
+  <div class="score-display" id="myscore">0</div>
+
+  <div class="status waiting" id="status">Ожидание...</div>
+
+  <!-- Финальные ставки -->
+  <div id="bet-area" style="display:none">
+    <h3>ФИНАЛ — Ваша ставка</h3>
+    <p>Максимум: <span class="max-bet-display" id="max-bet"></span></p>
+    <input class="player-input" type="number" id="bet-input" placeholder="Ваша ставка" min="0" style="font-size:24px;max-width:220px">
+    <br>
+    <button class="btn btn-green" onclick="placeBet()">Подтвердить ставку</button>
+  </div>
+
+  <!-- Финальный ответ -->
+  <div id="final-answer-area" style="display:none">
+    <h3>ФИНАЛ — Ваш ответ</h3>
+    <input class="player-input" id="final-answer" placeholder="Ваш ответ" style="font-size:20px;max-width:280px">
+    <br>
+    <button class="btn btn-green" onclick="submitFinalAnswer()">Отправить ответ</button>
+  </div>
+
+  <!-- Кнопка ответа -->
+  <button class="answer-btn waiting" id="ansbtn" disabled onclick="answer()">Ответ</button>
 </div>
 
 <script>
@@ -67,114 +638,265 @@ var ws, room, pid, myName;
 function join(){
   room = document.getElementById('room').value.trim().toUpperCase();
   myName = document.getElementById('name').value.trim();
-  if(!room||!myName){document.getElementById('err').textContent='Enter code and name';return}
+  if(!room||!myName){
+    document.getElementById('err').textContent='Введите код комнаты и имя';
+    return;
+  }
   pid = Math.random().toString(36).substr(2,8);
   ws = new WebSocket('ws://'+window.location.hostname+':8000/ws/'+room+'/'+pid);
-  ws.onopen = function(){ ws.send(JSON.stringify({type:'join',name:myName})); };
+
+  ws.onopen = function(){
+    ws.send(JSON.stringify({type:'join',name:myName}));
+  };
+
   ws.onmessage = function(ev){
     var msg = JSON.parse(ev.data);
     if(msg.type==='room_state'){
       show('waiting');
       document.getElementById('wroom').textContent = room;
-      document.getElementById('wplayers').textContent = 'Players: '+msg.players_count+'/5';
+      document.getElementById('wplayers').textContent = 'Игроков: '+msg.players_count+'/5';
     }
-    if(msg.type==='game_state'){ show('game'); update(msg); }
+    if(msg.type==='game_state'){
+      show('game');
+      update(msg);
+    }
   };
-  ws.onclose = function(){ show('login'); document.getElementById('err').textContent='Disconnected'; };
+
+  ws.onclose = function(){
+    show('login');
+    document.getElementById('err').textContent='Соединение потеряно';
+  };
+
+  ws.onerror = function(){
+    document.getElementById('err').textContent='Ошибка подключения';
+  };
 }
 
 function show(id){
-  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
+  document.querySelectorAll('.screen').forEach(function(s){
+    s.classList.remove('active');
+  });
   document.getElementById(id).classList.add('active');
 }
 
-function update(msg){ document.title = msg.game.phase; 
+function update(msg){
+  document.title = msg.game.phase;
   var players = msg.players, game = msg.game, me = players[pid];
-  if(!me){ console.log('Player not found in players', pid, Object.keys(players)); return; }
+
+  if(!me){
+    console.log('Player not found in players', pid, Object.keys(players));
+    return;
+  }
+
   document.getElementById('myscore').textContent = me.score;
-  
-  // FINAL ROUND
+
+  // ФИНАЛЬНЫЙ РАУНД
   if(game.phase === 'final' && game.final_phase){
     var fp = game.final_phase || 'betting';
     document.getElementById('ansbtn').style.display = 'none';
+
     if(fp === 'betting' && !me.has_bet){
       document.getElementById('bet-area').style.display = 'block';
       document.getElementById('final-answer-area').style.display = 'none';
-      document.getElementById('status').textContent = 'Place your bet';
+      document.getElementById('status').textContent = 'Сделайте вашу ставку';
+      document.getElementById('status').className = 'status ready';
       document.getElementById('max-bet').textContent = me.score;
       document.getElementById('bet-input').max = me.score;
-    } else if(fp === 'answering' && !me.has_answered){
+    }
+    else if(fp === 'answering' && !me.has_answered){
       document.getElementById('bet-area').style.display = 'none';
       document.getElementById('final-answer-area').style.display = 'block';
-      document.getElementById('status').textContent = 'Enter your final answer';
-    } else {
+      document.getElementById('status').textContent = 'Введите ваш финальный ответ';
+      document.getElementById('status').className = 'status ready';
+    }
+    else {
       document.getElementById('bet-area').style.display = 'none';
       document.getElementById('final-answer-area').style.display = 'none';
-      document.getElementById('status').textContent = 'Waiting for results...';
+      document.getElementById('status').textContent = 'Ожидание результатов...';
+      document.getElementById('status').className = 'status waiting';
     }
     return;
   }
-  
-  // REGULAR GAME
+
+  // ОБЫЧНАЯ ИГРА
   document.getElementById('bet-area').style.display = 'none';
   document.getElementById('final-answer-area').style.display = 'none';
   document.getElementById('ansbtn').style.display = 'block';
-  
+
   var q = game.current_question;
   var btn = document.getElementById('ansbtn');
   var st = document.getElementById('status');
-  
+
   if(!q){
-    st.textContent = 'Waiting for question...';
+    st.textContent = 'Ожидание вопроса...';
     st.className = 'status waiting';
     btn.className = 'answer-btn waiting';
     btn.disabled = true;
-  } else if(q.status==='selected'){
-    st.textContent = 'Host is reading...';
+  }
+  else if(q.status === 'selected'){
+    st.textContent = 'Ведущий читает вопрос...';
     st.className = 'status waiting';
     btn.className = 'answer-btn waiting';
     btn.disabled = true;
-  } else if(q.status==='open'){
+  }
+  else if(q.status === 'open'){
     if(me.can_answer){
-      st.textContent = 'PRESS TO ANSWER!';
+      st.textContent = 'НАЖМИТЕ ДЛЯ ОТВЕТА!';
       st.className = 'status ready';
       btn.className = 'answer-btn active';
       btn.disabled = false;
-    } else {
-      st.textContent = 'Someone is answering...';
+    }
+    else {
+      st.textContent = 'Кто-то отвечает...';
       st.className = 'status waiting';
       btn.className = 'answer-btn waiting';
       btn.disabled = true;
     }
-  } else if(q.status==='answering'){
-    st.textContent = 'Answering...';
-    st.className = 'status answered';
-    btn.className = 'answer-btn pressed';
-    btn.disabled = true;
-  } else if(q.status==='answered'){
-    st.textContent = 'Correct!';
-    st.className = 'status answered';
+  }
+  else if(q.status === 'answering'){
+    // Определяем ID отвечающего игрока
+    var answeringPlayerId =
+      game.answering_player ||
+      game.answering_player_id ||
+      game.answering_name ||
+      game.answering_id ||
+      game.current_answerer ||
+      '';
+
+    var answeringPlayerName = '';
+
+    // Ищем имя отвечающего игрока
+    if (answeringPlayerId) {
+      if (players[answeringPlayerId] && players[answeringPlayerId].name) {
+        answeringPlayerName = players[answeringPlayerId].name;
+      } else {
+        for (var id in players) {
+          if (players[id].name === answeringPlayerId) {
+            answeringPlayerName = answeringPlayerId;
+            answeringPlayerId = id;
+            break;
+          }
+        }
+      }
+    }
+
+    // Проверяем, я ли отвечаю
+    var isMeAnswering = false;
+
+    if (answeringPlayerId && answeringPlayerId === pid) {
+      isMeAnswering = true;
+    }
+
+    if (me.can_answer === true || me.can_answer === 1) {
+      isMeAnswering = true;
+    }
+
+    if (me.has_answered === true || me.has_answered === 1) {
+      isMeAnswering = true;
+    }
+
+    if (isMeAnswering) {
+      // Я отвечаю - показываем "Ты отвечаешь!"
+      st.textContent = 'Ты отвечаешь!';
+      st.className = 'status answered';  // Мятный цвет
+      btn.className = 'answer-btn pressed';
+      btn.disabled = true;
+    } else {
+      // Кто-то другой отвечает - показываем "Отвечает: [имя]"
+      if (answeringPlayerName) {
+        st.textContent = 'Отвечает: ' + answeringPlayerName;
+      } else {
+        st.textContent = 'Игрок отвечает...';
+      }
+      st.className = 'status waiting';  // Лиловый цвет
+      btn.className = 'answer-btn waiting';
+      btn.disabled = true;
+    }
+  }
+  else if(q.status === 'answered'){
+    // Определяем, кто правильно ответил
+    var correctPlayerId =
+      game.last_correct_player ||
+      game.correct_player ||
+      game.correct_player_id ||
+      game.correct_answerer ||
+      '';
+
+    var correctPlayerName = '';
+
+    // Ищем имя игрока, который правильно ответил
+    if (correctPlayerId) {
+      // Если это ID игрока в players
+      if (players[correctPlayerId] && players[correctPlayerId].name) {
+        correctPlayerName = players[correctPlayerId].name;
+      } else {
+        // Ищем по имени
+        for (var id in players) {
+          if (players[id].name === correctPlayerId) {
+            correctPlayerName = correctPlayerId;
+            correctPlayerId = id;
+            break;
+          }
+        }
+      }
+    }
+
+    // Проверяем, я ли правильно ответил
+    var isMeCorrect = false;
+
+    // Сравниваем ID
+    if (correctPlayerId && correctPlayerId === pid) {
+      isMeCorrect = true;
+    }
+
+    if (isMeCorrect) {
+      // Я правильно ответил - показываем "Верно!"
+      st.textContent = 'Верно!';
+    } else {
+      // Кто-то другой правильно ответил
+      if (correctPlayerName && correctPlayerName !== '') {
+        st.textContent = 'Игрок ' + correctPlayerName + ' ответил верно';
+      } else {
+        st.textContent = 'Игрок ответил верно';
+      }
+    }
+    st.className = 'status answered';  // Мятный цвет
     btn.className = 'answer-btn pressed';
     btn.disabled = true;
   }
 }
 
-function answer(){ ws.send(JSON.stringify({type:'answer_attempt'})); }
+function answer(){
+  ws.send(JSON.stringify({type:'answer_attempt'}));
+}
+
 function placeBet(){
   var bet = parseInt(document.getElementById('bet-input').value);
   var maxBet = parseInt(document.getElementById('bet-input').max) || 0;
-  if(isNaN(bet) || bet<0){ alert("Enter valid bet"); return; }
-  if(bet > maxBet){ alert("Max bet is "+maxBet); return; }
+
+  if(isNaN(bet) || bet < 0){
+    alert("Введите корректную ставку");
+    return;
+  }
+  if(bet > maxBet){
+    alert("Максимальная ставка: " + maxBet);
+    return;
+  }
+
   ws.send(JSON.stringify({type:'final_bet', bet:bet}));
   document.getElementById('bet-area').style.display = 'none';
-  document.getElementById('status').textContent = 'Bet placed!';
+  document.getElementById('status').textContent = 'Ставка принята!';
+  document.getElementById('status').className = 'status waiting';
 }
+
 function submitFinalAnswer(){
-  var ans = document.getElementById('final-answer').value;
+  var ans = document.getElementById('final-answer').value.trim();
   if(!ans) return;
+
   ws.send(JSON.stringify({type:'final_answer', answer:ans}));
   document.getElementById('final-answer-area').style.display = 'none';
-  document.getElementById('status').textContent = 'Answer submitted!';
+  document.getElementById('status').textContent = 'Ответ отправлен!';
+  document.getElementById('status').className = 'status waiting';
 }
 </script>
 </body>

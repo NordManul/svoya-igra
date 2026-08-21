@@ -5946,6 +5946,7 @@ function showFinalAnswer(){
   var bets = game.final_bets || {};
   var answers = game.final_answers || {};
   var players = window._gameState.players;
+  window.fc = {}
   var h = '<div class="overlay-box"><h2>'+t.name+'</h2>';
   h += '<div style="font-size:24px;color:#ff9800;font-weight:bold;margin:15px 0">ОТВЕТ: '+t.answer+'</div>';
   h += '<table style="width:100%;margin:15px 0"><tr><th>Игрок</th><th>Ставка</th><th>Ответ</th><th>Верно</th></tr>';
@@ -5970,7 +5971,6 @@ function showFinalAnswer(){
   h += '</table><button class="btn btn-green" onclick="applyFinalResults()">ПОКАЗАТЬ РЕЗУЛЬТАТЫ</button></div>';
   document.getElementById('overlay').innerHTML = h;
   document.getElementById('overlay').style.display = 'flex';
-  window._fc = {};
 }
 function applyFinalResults() {
     console.log('=== applyFinalResults START ===');
@@ -5995,15 +5995,14 @@ function applyFinalResults() {
         console.log('results:', results);
         
         for (var pid in players) {
-            if (players[pid] && !players[pid].is_host) {
-                var score = players[pid].score || 0;
-                // Если игрок ответил верно - добавляем ставку
-                if (results[pid] && bets[pid]) {
-                    score += bets[pid];
-                }
-                scores[pid] = { name: players[pid].name, score: score };
+            if (players[pid] && !players[pid].ishost) {
+              var score = players[pid].score || 0
+              var bet = bets[pid] || 0
+              var correct = !!results[pid]   // явное приведение к boolean, undefined → false
+              score += correct ? bet : -bet
+              scores[pid] = { name: players[pid].name, score: score }
             }
-        }
+          }
     }
     
     console.log('scores:', scores);
