@@ -4711,6 +4711,9 @@ function editPlayerScore(playerId) {
                     delta: delta
                 }));
             }
+
+            // Показываем сообщение об изменении
+            showScoreMessage(playerName, delta);
         } else {
             targetElement.textContent = originalScore;
         }
@@ -4744,6 +4747,92 @@ function editPlayerScore(playerId) {
 
     targetElement.addEventListener('blur', onBlur);
     targetElement.addEventListener('keydown', onKeyDown);
+}
+
+// Вспомогательная функция для отображения сообщения об изменении очков
+function showScoreMessage(playerName, delta) {
+    var ansname = document.getElementById('ansname');
+    if (!ansname || !playerName) return;
+
+    // Очищаем ВСЕ предыдущие таймеры
+    if (window._selectionTimeout) {
+        clearTimeout(window._selectionTimeout);
+        window._selectionTimeout = null;
+    }
+    if (window._scoreMessageTimeout) {
+        clearTimeout(window._scoreMessageTimeout);
+    }
+
+    // Устанавливаем флаг, чтобы renderGame не стирал сообщение
+    window._showScoreMessage = true;
+
+    // Формируем сообщение
+    var absDelta = Math.abs(delta);
+    var color = delta > 0 ? '#167d55' : '#e95d4f';
+    var messageText = 'Игрок ' + playerName + ' ' +
+                     (delta > 0 ? 'получил' : 'потерял') + ' ' +
+                     absDelta + ' очков';
+
+    window._scoreMessageHTML = '<span style="color:' + color + ';font-weight:900;">' +
+                               messageText + '</span>';
+
+    ansname.innerHTML = window._scoreMessageHTML;
+
+    // Через 3 секунды очищаем сообщение
+    window._scoreMessageTimeout = setTimeout(function() {
+        window._showScoreMessage = false;
+        window._scoreMessageHTML = '';
+        ansname.textContent = '';
+        ansname.style.color = '';
+    }, 3000);
+}
+
+// Обновленная функция changePlayerScore (для клавиатурного режима)
+function changePlayerScore(playerId, delta) {
+    if (!window.ws || window.ws.readyState !== WebSocket.OPEN) {
+        console.error('WebSocket not open');
+        return;
+    }
+
+    // Находим имя игрока
+    let playerName = '';
+    if (window._gameState && window._gameState.players) {
+        const players = window._gameState.players;
+        if (players[playerId] && players[playerId].name) {
+            playerName = players[playerId].name;
+        } else {
+            for (var id in players) {
+                if (id === playerId && players[id].name) {
+                    playerName = players[id].name;
+                    break;
+                }
+            }
+        }
+    }
+
+    console.log('[changePlayerScore] sending', playerId, delta);
+
+    // Вычисляем новое значение счета
+    var currentScore = 0;
+    if (window._gameState && window._gameState.players) {
+        var players = window._gameState.players;
+        if (players[playerId] && players[playerId].score !== undefined) {
+            currentScore = players[playerId].score;
+        }
+    }
+    var newScore = currentScore + delta;
+
+    // Сохраняем ручное обновление
+    window._manualScoreUpdate = {
+        playerId: playerId,
+        score: newScore,
+        timestamp: Date.now()
+    };
+
+    window.ws.send(JSON.stringify({ type: 'adjust_score', player_id: playerId, delta: delta }));
+
+    // Показываем сообщение об изменении очков
+    showScoreMessage(playerName, delta);
 }
 // Функция для изменения очков игрока
 function changePlayerScore(playerId, delta) {
