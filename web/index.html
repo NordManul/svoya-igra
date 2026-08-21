@@ -4073,6 +4073,143 @@ body {
 #start-screen .start-buttons {
   transform: translateY(80px) !important;  /* Было 50px, теперь 80px */
 }
+
+/* Плашка с ценой сохраняет свой цвет */
+#editor-screen .q-item.filled .q-price {
+  background: #ffcdb8 !important;
+  border-color: #25233d !important;
+  color: #20203a !important;
+}
+
+/* Подсветка заполненных карточек вопросов - очень светлый мятный */
+#editor-screen .q-item.filled {
+  background: #e8f8f0 !important;
+  border-left-color: #167d5d !important;
+}
+
+/* Подсветка заполненных карточек финала - очень светлый мятный */
+#editor-screen .final-item.filled {
+  background: #e8f8f0 !important;
+  border: 1px solid #167d5d !important;
+}
+
+/* Все поля внутри заполненной финальной карточки */
+#editor-screen .final-item.filled input[type="text"] {
+  background: #ffffff !important;
+}
+
+/* Название темы в заполненной карточке - сохраняет обычный цвет */
+#editor-screen .final-item.filled > input[type="text"]:first-child {
+  background: #fffaf0 !important;
+  border-color: #25233d !important;
+  color: #20203a !important;
+}
+    /* Последняя оставшаяся тема в финале - светло-мятный цвет */
+#game-screen.final-game-screen .board-grid .bcell.last-theme {
+  background: #d9f5df !important;
+  border-color: #167d5d !important;
+  color: #167d5d !important;
+  box-shadow: 0 6px 0 #167d5d !important;
+}
+
+    /* Карточка черновика - контейнер */
+.draft-card-wrapper {
+  position: relative;
+  display: block;
+}
+
+/* Кнопка удаления черновика */
+.draft-delete-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 2px solid #25213b;
+  border-radius: 50%;
+  background: #e95d4f;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 24px;
+  text-align: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 10;
+}
+
+/* Показываем крестик при наведении на карточку */
+.draft-card-wrapper:hover .draft-delete-btn {
+  opacity: 1;
+}
+
+    /* Карточка черновика - контейнер */
+.draft-card-wrapper {
+  position: relative;
+  display: block;
+  min-height: 120px;
+}
+
+/* Кнопка черновика должна занимать всю ширину контейнера */
+.draft-card-wrapper .draft-card {
+  width: 100%;
+  min-height: 120px;
+  margin: 0;
+}
+
+.draft-delete-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 2px solid #25213b;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #25213b;
+  font-size: 20px;
+  font-weight: bold;
+  line-height: 28px;
+  text-align: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.draft-delete-btn:hover {
+  transform: scale(1.15);
+  background: #f08080;
+  color: #ffffff;
+}
+
+/* Показываем крестик при наведении на карточку */
+.draft-card-wrapper:hover .draft-delete-btn {
+  opacity: 1;
+}
+    /* Редактируемый счет игрока */
+#game-screen .player-badge .pscore {
+  cursor: text;
+  transition: transform 0.15s ease;
+  min-width: 40px;
+}
+
+#game-screen .player-badge .pscore:hover {
+  transform: scale(1.05);
+}
+
+#game-screen .player-badge .pscore.editing {
+  outline: 2px solid #ff9800;
+  outline-offset: 2px;
+  background: #fffdf9;
+  border-radius: 6px;
+  padding: 0 8px;
+  cursor: text;
+}
 </style>
 </head>
 <body>
@@ -4260,8 +4397,62 @@ function initTemplate(){T={rounds:[],final:[],name:'My Game'};for(var r=0;r<3;r+
 initTemplate();document.addEventListener("click",function(e){var c=e.target.closest(".bcell");if(!c)return;var cat=c.getAttribute("data-cat");var price=c.getAttribute("data-price");var ex=c.getAttribute("data-exists");var sel=c.getAttribute("data-sel");if(cat&&price&&ex==="1"&&sel==="0"){window.ws.send(JSON.stringify({type:"select_question",category:cat,price:parseInt(price)}))}});document.addEventListener("click",function(e){var c=e.target.closest(".bcell");if(!c)return;var cat=c.getAttribute("data-cat");var price=c.getAttribute("data-price");var ex=c.getAttribute("data-exists");var sel=c.getAttribute("data-sel");if(cat&&price&&ex==="1"&&sel==="0"){window.ws.send(JSON.stringify({type:"select_question",category:cat,price:parseInt(price)}))}});switchRound(0);
 
 function switchRound(idx){currentRound=idx;var btns=document.querySelectorAll('#tabs button');btns.forEach(function(b,i){b.classList.remove('active');if(i===idx)b.classList.add('active')});renderRound(idx)}
+function renderRound(idx){
+  var h='';
+  if(idx<3){
+    var round=T.rounds[idx];
+    for(var c=0;c<round.categories.length;c++){
+      var cat=round.categories[c];
+      h+='<div class="theme-block"><input type="text" placeholder="Theme name" value="'+cat.name+'" onchange="T.rounds['+idx+'].categories['+c+'].name=this.value" style="font-weight:bold;font-size:16px;width:300px">';
+      for(var q=0;q<cat.questions.length;q++){
+        var qq=cat.questions[q];
+        var isFilled = (qq.text && qq.text.trim() !== '') && (qq.answer && qq.answer.trim() !== '');
+        h+='<div class="q-item' + (isFilled ? ' filled' : '') + '"><div class="q-price">'+qq.price+'</div>';
+        h+='<div class="q-row"><label>Q:</label><input type="text" placeholder="Question" value="'+esc(qq.text)+'" oninput="T.rounds['+idx+'].categories['+c+'].questions['+q+'].text=this.value;updateQItemHighlight(this)"></div>';
+        h+='<div class="q-row"><label></label><div class="drop-zone" onclick="this.nextElementSibling.click()" ondrop="dropRound(event,'+idx+','+c+','+q+',\'q\',this)" ondragover="dragOver(event)" ondragleave="dragLeave(event)">'+(qq.qmedia?'File loaded':'Drop or click')+'</div><input type="file" style="display:none" onchange="upRound('+idx+','+c+','+q+',\'q\',this)">';
+        if(qq.qmedia)h+='<img class="preview" src="'+qq.qmedia+'">';
+        h+='</div>';
+        h+='<div class="q-row"><label>A:</label><input type="text" placeholder="Answer" value="'+esc(qq.answer)+'" oninput="T.rounds['+idx+'].categories['+c+'].questions['+q+'].answer=this.value;updateQItemHighlight(this)"></div>';
+        h+='<div class="q-row"><label></label><div class="drop-zone" onclick="this.nextElementSibling.click()" ondrop="dropRound(event,'+idx+','+c+','+q+',\'a\',this)" ondragover="dragOver(event)" ondragleave="dragLeave(event)">'+(qq.amedia?'File loaded':'Drop or click')+'</div><input type="file" style="display:none" onchange="upRound('+idx+','+c+','+q+',\'a\',this)">';
+        if(qq.amedia)h+='<img class="preview" src="'+qq.amedia+'">';
+        h+='</div></div>';
+      }
+      h+='</div>';
+    }
+  } else {
+    for(var i=0;i<T.final.length;i++){
+      var f=T.final[i];
+      var isFinalFilled = (f.text && f.text.trim() !== '') && (f.answer && f.answer.trim() !== '');
+      h+='<div class="final-item' + (isFinalFilled ? ' filled' : '') + '">';
+      h+='<input type="text" placeholder="Theme name" value="'+esc(f.name||'Theme '+(i+1))+'" onchange="T.final['+i+'].name=this.value" style="font-weight:bold;font-size:16px;width:300px"><br>';
+      h+='<div class="q-row"><label>Q:</label><input type="text" placeholder="Question" value="'+esc(f.text)+'" oninput="T.final['+i+'].text=this.value;updateQItemHighlight(this)"></div>';
+      h+='<div class="q-row"><label></label><div class="drop-zone" onclick="this.nextElementSibling.click()" ondrop="dropFinal(event,'+i+',\'q\',this)" ondragover="dragOver(event)" ondragleave="dragLeave(event)">'+(f.qmedia?'File loaded':'Drop or click')+'</div><input type="file" style="display:none" onchange="upFinal('+i+',\'q\',this)">';
+      if(f.qmedia)h+='<img class="preview" src="'+f.qmedia+'">';
+      h+='</div>';
+      h+='<div class="q-row"><label>A:</label><input type="text" placeholder="Answer" value="'+esc(f.answer)+'" oninput="T.final['+i+'].answer=this.value;updateQItemHighlight(this)"></div>';
+      h+='<div class="q-row"><label></label><div class="drop-zone" onclick="this.nextElementSibling.click()" ondrop="dropFinal(event,'+i+',\'a\',this)" ondragover="dragOver(event)" ondragleave="dragLeave(event)">'+(f.amedia?'File loaded':'Drop or click')+'</div><input type="file" style="display:none" onchange="upFinal('+i+',\'a\',this)">';
+      if(f.amedia)h+='<img class="preview" src="'+f.amedia+'">';
+      h+='</div></div>';
+    }
+}
+  document.getElementById('editor').innerHTML=h;
+}
+function updateQItemHighlight(input) {
+    var container = input.closest('.q-item, .final-item');
+    if (!container) return;
 
-function renderRound(idx){var h='';if(idx<3){var round=T.rounds[idx];for(var c=0;c<round.categories.length;c++){var cat=round.categories[c];h+='<div class="theme-block"><input type="text" placeholder="Theme name" value="'+cat.name+'" onchange="T.rounds['+idx+'].categories['+c+'].name=this.value" style="font-weight:bold;font-size:16px;width:300px">';for(var q=0;q<cat.questions.length;q++){var qq=cat.questions[q];h+='<div class="q-item"><div class="q-price">'+qq.price+'</div><div class="q-row"><label>Q:</label><input type="text" placeholder="Question" value="'+esc(qq.text)+'" onchange="T.rounds['+idx+'].categories['+c+'].questions['+q+'].text=this.value"></div><div class="q-row"><label></label><div class="drop-zone" onclick="this.nextElementSibling.click()" ondrop="dropRound(event,'+idx+','+c+','+q+',\'q\',this)" ondragover="dragOver(event)" ondragleave="dragLeave(event)">'+(qq.qmedia?'File loaded':'Drop or click')+'</div><input type="file" style="display:none" onchange="upRound('+idx+','+c+','+q+',\'q\',this)">';if(qq.qmedia)h+='<img class="preview" src="'+qq.qmedia+'">';h+='</div><div class="q-row"><label>A:</label><input type="text" placeholder="Answer" value="'+esc(qq.answer)+'" onchange="T.rounds['+idx+'].categories['+c+'].questions['+q+'].answer=this.value"></div><div class="q-row"><label></label><div class="drop-zone" onclick="this.nextElementSibling.click()" ondrop="dropRound(event,'+idx+','+c+','+q+',\'a\',this)" ondragover="dragOver(event)" ondragleave="dragLeave(event)">'+(qq.amedia?'File loaded':'Drop or click')+'</div><input type="file" style="display:none" onchange="upRound('+idx+','+c+','+q+',\'a\',this)">';if(qq.amedia)h+='<img class="preview" src="'+qq.amedia+'">';h+='</div></div>'}h+='</div>'}}else{for(var i=0;i<T.final.length;i++){var f=T.final[i];h+='<div class="final-item"><input type="text" placeholder="Theme name" value="'+esc(f.name||'Theme '+(i+1))+'" onchange="T.final['+i+'].name=this.value" style="font-weight:bold;font-size:16px;width:300px"><br><div class="q-row"><label>Q:</label><input type="text" placeholder="Question" value="'+esc(f.text)+'" onchange="T.final['+i+'].text=this.value"></div><div class="q-row"><label></label><div class="drop-zone" onclick="this.nextElementSibling.click()" ondrop="dropFinal(event,'+i+',\'q\',this)" ondragover="dragOver(event)" ondragleave="dragLeave(event)">'+(f.qmedia?'File loaded':'Drop or click')+'</div><input type="file" style="display:none" onchange="upFinal('+i+',\'q\',this)">';if(f.qmedia)h+='<img class="preview" src="'+f.qmedia+'">';h+='</div><div class="q-row"><label>A:</label><input type="text" placeholder="Answer" value="'+esc(f.answer)+'" onchange="T.final['+i+'].answer=this.value"></div><div class="q-row"><label></label><div class="drop-zone" onclick="this.nextElementSibling.click()" ondrop="dropFinal(event,'+i+',\'a\',this)" ondragover="dragOver(event)" ondragleave="dragLeave(event)">'+(f.amedia?'File loaded':'Drop or click')+'</div><input type="file" style="display:none" onchange="upFinal('+i+',\'a\',this)">';if(f.amedia)h+='<img class="preview" src="'+f.amedia+'">';h+='</div></div>'}}document.getElementById('editor').innerHTML=h}
+    var textInput = container.querySelector('input[placeholder="Question"]');
+    var answerInput = container.querySelector('input[placeholder="Answer"]');
+
+    if (textInput && answerInput) {
+        var isFilled = textInput.value.trim() !== '' && answerInput.value.trim() !== '';
+        if (isFilled) {
+            container.classList.add('filled');
+        } else {
+            container.classList.remove('filled');
+        }
+    }
+}
 function esc(s){return s.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function escapeFinalHtml(s) {
   if (s === null || s === undefined) return '';
@@ -4294,16 +4485,57 @@ async function loadDrafts() {
   } else {
     for (var x of d.drafts) {
       h += `
-        <button class="draft-card"
-                type="button"
-                onclick="openDraft('${x.id}')">
-          ${x.name}
-        </button>
+        <div class="draft-card-wrapper">
+          <button class="draft-card"
+                  type="button"
+                  onclick="openDraft('${x.id}')">
+            ${x.name}
+          </button>
+          <button class="draft-delete-btn"
+                  type="button"
+                  onclick="deleteDraft(event, '${x.id}')"
+                  title="Удалить черновик">
+            ×
+          </button>
+        </div>
       `;
     }
   }
 
   document.getElementById('drafts-list').innerHTML = h;
+}
+
+async function deleteDraft(event, id) {
+  // Останавливаем всплытие события
+  event.stopPropagation();
+  event.preventDefault();
+
+  // Подтверждение удаления
+  if (!confirm('Удалить этот черновик?')) {
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/draft/delete', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ id: id })
+    });
+
+    const result = await response.json();
+
+    if (response.ok && result.success) {
+      // Перезагружаем список черновиков
+      await loadDrafts();
+    } else {
+      alert('Не удалось удалить черновик: ' + (result.message || 'неизвестная ошибка'));
+    }
+  } catch (error) {
+    console.error('Ошибка удаления черновика:', error);
+    alert('Ошибка удаления черновика');
+  }
 }
 async function openDraft(id){var r=await fetch('/api/draft/load',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id})});var d=await r.json();if(d.template){T=d.template;document.getElementById('drafts-screen').style.display = 'none';showEditor();document.getElementById('gameName').value=T.name||'';switchRound(0)}}
 async function saveDraft(){T.name=document.getElementById('gameName').value||'My Game';var did=Math.random().toString(36).substr(2,8);await fetch('/api/draft/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:did,template:T})});alert('Draft saved!')}
@@ -4334,7 +4566,147 @@ async function updateLobbyIP() {
     document.getElementById('lobby-ip').innerHTML = `<b>http://${fallbackIP}:8000/player.html</b>`;
   }
 }
+// Функция для inline-редактирования очков игрока
+function editPlayerScore(playerId) {
+    if (!window._gameState || !window._gameState.players) {
+        console.error('Нет данных об игроках');
+        return;
+    }
 
+    var players = window._gameState.players;
+    var playerName = '';
+    var currentScore = 0;
+    var actualPlayerId = playerId;
+
+    // Находим имя и текущий счет игрока
+    if (players[playerId] && players[playerId].name) {
+        playerName = players[playerId].name;
+        currentScore = players[playerId].score || 0;
+    } else {
+        // Ищем по имени
+        for (var id in players) {
+            if (players[id].name === playerId) {
+                playerName = players[id].name;
+                currentScore = players[id].score || 0;
+                actualPlayerId = id;
+                break;
+            }
+        }
+    }
+
+    if (!playerName) {
+        console.error('Игрок не найден:', playerId);
+        return;
+    }
+
+    // Находим элемент счета в DOM
+    var scoreElements = document.querySelectorAll('.player-badge .pscore');
+    var targetElement = null;
+
+    for (var i = 0; i < scoreElements.length; i++) {
+        var el = scoreElements[i];
+        var parentBadge = el.closest('.player-badge');
+        var nameElement = parentBadge ? parentBadge.querySelector('.pname') : null;
+
+        if (nameElement && nameElement.textContent === playerName) {
+            targetElement = el;
+            break;
+        }
+    }
+
+    if (!targetElement) {
+        console.error('Элемент счета не найден для игрока:', playerName);
+        return;
+    }
+
+    // Если уже редактируется, не создаем новое поле
+    if (targetElement.classList.contains('editing')) {
+        return;
+    }
+
+    // Сохраняем текущее значение
+    var originalScore = currentScore;
+
+    // Делаем элемент редактируемым
+    targetElement.classList.add('editing');
+    targetElement.setAttribute('contenteditable', 'true');
+    targetElement.textContent = originalScore;
+
+    // Фокусируемся и выделяем текст
+    var range = document.createRange();
+    var selection = window.getSelection();
+    range.selectNodeContents(targetElement);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    targetElement.focus();
+
+    // Обработчик завершения редактирования
+    function finishEditing(save) {
+        targetElement.classList.remove('editing');
+        targetElement.setAttribute('contenteditable', 'false');
+        targetElement.removeEventListener('blur', onBlur);
+        targetElement.removeEventListener('keydown', onKeyDown);
+
+        if (!save) {
+            // Восстанавливаем исходное значение
+            targetElement.textContent = originalScore;
+            return;
+        }
+
+                var newScore = parseInt(targetElement.textContent.trim());
+
+        if (isNaN(newScore)) {
+            targetElement.textContent = originalScore;
+            return;
+        }
+
+        // Вычисляем разницу
+        var delta = newScore - originalScore;
+
+        if (delta !== 0) {
+            // Отправляем изменение на сервер
+            changePlayerScore(actualPlayerId, delta);
+
+            // Обновляем локальное состояние
+            if (window._gameState && window._gameState.players) {
+                var players = window._gameState.players;
+                if (players[actualPlayerId]) {
+                    players[actualPlayerId].score = newScore;
+                } else {
+                    // Ищем по имени
+                    for (var pid in players) {
+                        if (players[pid].name === playerName) {
+                            players[pid].score = newScore;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Обновляем отображение
+            targetElement.textContent = newScore;
+        } else {
+            targetElement.textContent = originalScore;
+        }
+    }
+
+    function onBlur() {
+        finishEditing(true);
+    }
+
+    function onKeyDown(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            finishEditing(true);
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            finishEditing(false);
+        }
+    }
+
+    targetElement.addEventListener('blur', onBlur);
+    targetElement.addEventListener('keydown', onKeyDown);
+}
 // Функция для изменения очков игрока
 function changePlayerScore(playerId, delta) {
     if (!window.ws || window.ws.readyState !== WebSocket.OPEN) {
@@ -4379,10 +4751,11 @@ function changePlayerScore(playerId, delta) {
         // Устанавливаем флаг, чтобы renderGame не стирал сообщение
         window._showScoreMessage = true;
 
-        // Вся надпись одного цвета
-        var messageText = 'Игрок ' + playerName + ' ' +
-                         (delta > 0 ? 'получил' : 'потерял') + ' ' +
-                         sign + delta + ' очков';
+            // Вся надпись одного цвета
+    var absDelta = Math.abs(delta);
+    var messageText = 'Игрок ' + playerName + ' ' +
+                     (delta > 0 ? 'получил' : 'потерял') + ' ' +
+                     absDelta + ' очков';
 
         window._scoreMessageHTML = '<span style="color:' + color + ';font-weight:900;">' +
                                    messageText + '</span>';
@@ -4849,7 +5222,9 @@ document.getElementById('game-screen').classList.toggle(
         var th = game._finalThemes[idx];
         if(th.eliminated){ bh+='<div class="bcell used"></div>'; continue; }
         var last = activeThemes.length===1;
-        bh+='<div class="bcell" style="'+(last?'background:#28a745;color:white':'background:#f5deb3;color:#1a1a2e')+';border:3px solid #1a1a2e;box-shadow:0 4px 8px rgba(0,0,0,0.5);border-radius:12px;font-size:14px" onclick="'+(last?'showFinalQuestion('+th.index+')':'eliminateTheme('+th.index+')')+'">'+th.name+'</div>';
+        // Добавляем класс last-theme для последней оставшейся карточки
+        var lastClass = last ? ' last-theme' : '';
+        bh+='<div class="bcell'+lastClass+'" style="'+(last?'':'background:#f5deb3;color:#1a1a2e')+';border:3px solid #1a1a2e;box-shadow:0 4px 8px rgba(0,0,0,0.5);border-radius:12px;font-size:14px" onclick="'+(last?'showFinalQuestion('+th.index+')':'eliminateTheme('+th.index+')')+'">'+th.name+'</div>';
       }
     }
     if(bh!==window._lastBoardHTML){document.getElementById('gboard').innerHTML=bh;window._lastBoardHTML=bh;}
@@ -4878,7 +5253,7 @@ var ph = '';
 
         ph += '<div class="player-badge" style="' + (p.online === false ? 'opacity:0.5' : '') + '">' +
               '<div class="pname">' + p.name + '</div>' +
-              '<div class="pscore ' + scoreClass + '">' + actualScore + '</div>' +
+              '<div class="pscore ' + scoreClass + '" onclick="editPlayerScore(\'' + id + '\')" title="Нажмите, чтобы изменить очки">' + actualScore + '</div>' +
               '</div>';
     }
     document.getElementById('gplayers').innerHTML = ph;
