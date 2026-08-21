@@ -564,6 +564,98 @@ body::after {
     bottom: -80px;
   }
 }
+/* ============ МЫШИ НА ЭКРАНЕ СТАВОК ============ */
+.bet-mouse {
+  position: fixed;
+  z-index: 2;  /* Выше кругов (z-index: 0), но ниже контента */
+  pointer-events: none;
+  line-height: 0;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.bet-mouse img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Десктоп: мыши зеркально слева и справа */
+.bet-mouse-left {
+  left: 50px;
+  bottom: 80px;
+  width: 240px;
+  z-index: 2;
+}
+
+.bet-mouse-right {
+  right: 50px;
+  bottom: 80px;
+  width: 240px;
+  transform: scaleX(-1);
+  z-index: 2;
+}
+
+/* Большие экраны */
+@media (min-width: 1200px) {
+  .bet-mouse-left {
+    width: 270px;
+    left: 70px;
+    bottom: 60px;
+  }
+
+  .bet-mouse-right {
+    width: 270px;
+    right: 70px;
+    bottom: 60px;
+  }
+}
+
+/* Мобильные: мыши слева вверху и справа снизу */
+@media (max-width: 600px) {
+  .bet-mouse-left {
+    left: -10px;
+    top: -5px;
+    bottom: auto;
+    width: 150px;
+    transform: none;
+    z-index: 2;  /* Перед кругами */
+  }
+
+  .bet-mouse-right {
+    right: -5px;
+    bottom: -5px;
+    top: auto;
+    width: 100px;
+    transform: scaleX(-1);
+    z-index: 1;  /* За кнопкой, но перед кругом */
+  }
+}
+
+@media (max-width: 360px) {
+  .bet-mouse-left {
+    width: 130px;
+    left: -5px;
+    top: -3px;
+  }
+
+  .bet-mouse-right {
+    width: 80px;
+    right: -5px;
+    bottom: -3px;
+  }
+}
+
+/* Контент экрана игры должен быть выше мышей */
+#game .score-display,
+#game .status,
+#game #bet-area,
+#game #final-answer-area,
+#game #ansbtn {
+  position: relative;
+  z-index: 3;  /* Выше мышей */
+}
 </style>
 </head>
 <body>
@@ -607,8 +699,15 @@ body::after {
 
 <!-- ЭКРАН ИГРЫ -->
 <div id="game" class="screen">
-  <div class="score-display" id="myscore">0</div>
+  <!-- Мыши для экрана ставок -->
+  <div class="bet-mouse bet-mouse-left" id="bet-mouse-left" style="display:none">
+    <img src="/web/assets/mouse.jpg" alt="Мышь" aria-hidden="true">
+  </div>
+  <div class="bet-mouse bet-mouse-right" id="bet-mouse-right" style="display:none">
+    <img src="/web/assets/mouse.jpg" alt="Мышь" aria-hidden="true">
+  </div>
 
+  <div class="score-display" id="myscore">0</div>
   <div class="status waiting" id="status">Ожидание...</div>
 
   <!-- Финальные ставки -->
@@ -691,13 +790,18 @@ function update(msg){
   document.getElementById('myscore').textContent = me.score;
 
   // ФИНАЛЬНЫЙ РАУНД
-  if(game.phase === 'final' && game.final_phase){
+if(game.phase === 'final' && game.final_phase){
     var fp = game.final_phase || 'betting';
     document.getElementById('ansbtn').style.display = 'none';
 
     if(fp === 'betting' && !me.has_bet){
       document.getElementById('bet-area').style.display = 'block';
       document.getElementById('final-answer-area').style.display = 'none';
+
+      // ПОКАЗЫВАЕМ МЫШЕЙ ТОЛЬКО НА ЭКРАНЕ СТАВОК
+      document.getElementById('bet-mouse-left').style.display = 'block';
+      document.getElementById('bet-mouse-right').style.display = 'block';
+
       document.getElementById('status').textContent = 'Сделайте вашу ставку';
       document.getElementById('status').className = 'status ready';
       document.getElementById('max-bet').textContent = me.score;
@@ -706,13 +810,24 @@ function update(msg){
     else if(fp === 'answering' && !me.has_answered){
       document.getElementById('bet-area').style.display = 'none';
       document.getElementById('final-answer-area').style.display = 'block';
+
+      // СКРЫВАЕМ МЫШЕЙ
+      document.getElementById('bet-mouse-left').style.display = 'none';
+      document.getElementById('bet-mouse-right').style.display = 'none';
+
       document.getElementById('status').textContent = 'Введите ваш финальный ответ';
       document.getElementById('status').className = 'status ready';
     }
     else {
+      // ВАЖНО: Если игрок уже сделал ставку (has_bet = true)
       document.getElementById('bet-area').style.display = 'none';
       document.getElementById('final-answer-area').style.display = 'none';
-      document.getElementById('status').textContent = 'Ожидание результатов...';
+
+      // СКРЫВАЕМ МЫШЕЙ
+      document.getElementById('bet-mouse-left').style.display = 'none';
+      document.getElementById('bet-mouse-right').style.display = 'none';
+
+      document.getElementById('status').textContent = 'Ставка принята!';
       document.getElementById('status').className = 'status waiting';
     }
     return;
@@ -720,8 +835,13 @@ function update(msg){
 
   // ОБЫЧНАЯ ИГРА
   document.getElementById('bet-area').style.display = 'none';
-  document.getElementById('final-answer-area').style.display = 'none';
-  document.getElementById('ansbtn').style.display = 'block';
+document.getElementById('final-answer-area').style.display = 'none';
+
+// СКРЫВАЕМ МЫШЕЙ В ОБЫЧНОЙ ИГРЕ
+document.getElementById('bet-mouse-left').style.display = 'none';
+document.getElementById('bet-mouse-right').style.display = 'none';
+
+document.getElementById('ansbtn').style.display = 'block';
 
   var q = game.current_question;
   var btn = document.getElementById('ansbtn');
@@ -885,6 +1005,11 @@ function placeBet(){
 
   ws.send(JSON.stringify({type:'final_bet', bet:bet}));
   document.getElementById('bet-area').style.display = 'none';
+
+  // СКРЫВАЕМ МЫШЕЙ ПОСЛЕ СТАВКИ
+  document.getElementById('bet-mouse-left').style.display = 'none';
+  document.getElementById('bet-mouse-right').style.display = 'none';
+
   document.getElementById('status').textContent = 'Ставка принята!';
   document.getElementById('status').className = 'status waiting';
 }
