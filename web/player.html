@@ -341,14 +341,14 @@ body::after {
 /* Кнопка ответа - МЯТНАЯ, БОЛЬШЕ */
 .answer-btn {
   display: block;
-  width: 240px;
-  height: 240px;
+  width: 300px;  /* Увеличено с 240px */
+  height: 300px; /* Увеличено с 240px */
   margin: 25px auto;
   border-radius: 50%;
   border: 3px solid #25233d;
   cursor: pointer;
   font-family: "Manrope", Arial, sans-serif;
-  font-size: 28px;
+  font-size: 36px; /* Увеличено с 28px */
   font-weight: 900;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -455,6 +455,13 @@ body::after {
     right: -200px;
     bottom: -180px;
   }
+
+  /* Кнопка ответа ещё больше на больших экранах */
+  .answer-btn {
+    width: 340px;  /* Увеличено */
+    height: 340px; /* Увеличено */
+    font-size: 40px; /* Увеличено */
+  }
 }
 
 @media (max-width: 600px) {
@@ -490,9 +497,9 @@ body::after {
 
   /* Кнопка ответа БОЛЬШЕ на мобильных */
   .answer-btn {
-    width: 200px;
-    height: 200px;
-    font-size: 24px;
+    width: 260px;  /* Увеличено с 200px */
+    height: 260px; /* Увеличено с 200px */
+    font-size: 32px; /* Увеличено с 24px */
   }
 
   /* Счёт ЕЩЁ БОЛЬШЕ на мобильных */
@@ -533,9 +540,9 @@ body::after {
 @media (max-width: 360px) {
   /* Кнопка ответа ещё больше на маленьких экранах */
   .answer-btn {
-    width: 180px;
-    height: 180px;
-    font-size: 22px;
+    width: 220px;  /* Увеличено с 180px */
+    height: 220px; /* Увеличено с 180px */
+    font-size: 28px; /* Увеличено с 22px */
   }
 
   /* Счёт ЕЩЁ БОЛЬШЕ на маленьких экранах */

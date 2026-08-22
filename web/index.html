@@ -4210,6 +4210,78 @@ body {
   padding: 0 8px;
   cursor: text;
 }
+
+    /* ===== КНОПКИ ПЕРЕХОДА МЕЖДУ РАУНДАМИ (СНИЗУ ПО ЦЕНТРУ) ===== */
+
+.round-switcher {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  gap: 12px;
+  background: #fffdf9;
+  padding: 10px 14px;
+  border: 2px solid #25233d;
+  border-radius: 18px;
+  box-shadow: 0 4px 0 #25233d;
+}
+
+.round-btn {
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: 2px solid #25233d;
+  border-radius: 14px;
+  background: #fffdf9;
+  color: #20203a;
+  box-shadow: 0 3px 0 #25233d;
+  cursor: pointer;
+  font-family: "Manrope", Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+}
+
+.round-btn:hover {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #25233d;
+}
+
+.round-btn.active {
+  background: #abe7d0;
+  color: #167d5d;
+  border-color: #167d5d;
+  box-shadow: 0 3px 0 #167d5d;
+}
+
+.round-btn.final-btn {
+  background: #ffcdb8;
+}
+
+.round-btn.final-btn.active {
+  background: #abe7d0;
+  color: #167d5d;
+  border-color: #167d5d;
+  box-shadow: 0 3px 0 #167d5d;
+}
+
+@media (max-width: 768px) {
+  .round-switcher {
+    bottom: 16px;
+    gap: 8px;
+    padding: 8px 10px;
+  }
+
+  .round-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 14px;
+    border-radius: 12px;
+  }
+}
 </style>
 </head>
 <body>
@@ -4348,6 +4420,14 @@ body {
 <div class="game-header"><h2 id="rname"></h2><div id="game-join-link" class="game-join-link"></div><span style="font-size:18px;color:white">Room: <b id="game-room-code"></b></span><span>Host: <b id="hname-display"></b></span></div>
 <div class="players-row" id="gplayers"></div>
 <div class="board-wrap"><div class="board-grid" id="gboard"></div></div>
+<!-- Кнопки перехода между раундами -->
+<div class="round-switcher" id="round-switcher" style="display:none;">
+  <button class="round-btn" data-round="0" onclick="switchGameRound(0)" title="Раунд 1">1</button>
+  <button class="round-btn" data-round="1" onclick="switchGameRound(1)" title="Раунд 2">2</button>
+  <button class="round-btn" data-round="2" onclick="switchGameRound(2)" title="Раунд 3">3</button>
+  <button class="round-btn final-btn" data-round="3" onclick="switchGameRound(3)" title="Финал">Ф</button>
+</div>
+
 <div class="ctrl-bar">
 <span class="answer-name" id="ansname"></span>
 <button class="btn btn-green" id="btn-open" style="display:none" onclick="openQ()">Open Question</button>
@@ -5179,7 +5259,13 @@ document.getElementById('lobby-screen').style.display = 'block';
         }
         return;
     }
-
+     if (msg.type === 'round_changed' || msg.type === 'roundchange') {
+        console.log('Раунд изменен:', msg);
+        if (msg.round !== undefined) {
+          updateRoundButtons(msg.round);
+        }
+        return;
+      }
             if (msg.type === 'game_state' || msg.type === 'gamestate') {
         const phase = msg.game?.phase;
 
@@ -5269,9 +5355,132 @@ function launchGame(){window.ws.send(JSON.stringify({type:"start_game"}));docume
 // ========== GAME RENDER ==========
 var _lastBoardHTML='';
 if(typeof _lastBoardHTML==='undefined'){window._lastBoardHTML='';}
+
+function switchGameRound(roundIndex) {
+  if (!window.ws || window.ws.readyState !== WebSocket.OPEN) {
+    console.error('WebSocket не подключен');
+    return;
+  }
+
+  if (!window._gameState || !window._gameState.game) {
+    console.error('Нет данных об игре');
+    return;
+  }
+
+  var game = window._gameState.game;
+  var currentPhase = game.phase;
+  var currentRound = game.current_round || 0;
+
+  console.log('switchGameRound:', roundIndex, 'currentPhase:', currentPhase, 'currentRound:', currentRound);
+
+  // Если игра в финале и пытаемся перейти на обычный раунд
+  if (currentPhase === 'final' && roundIndex !== 3) {
+    console.log('Нельзя перейти с финала на обычный раунд');
+    return;
+  }
+
+  // Если пытаемся перейти на финал
+  if (roundIndex === 3) {
+    skipToFinal();
+    return;
+  }
+
+  // Если игра не в фазе playing
+  if (currentPhase !== 'playing') {
+    console.log('Игра не в фазе playing');
+    return;
+  }
+
+  // Если есть активный вопрос
+  if (game.current_question && game.current_question.status !== 'answered') {
+    console.log('Есть активный вопрос, нельзя переключать');
+    return;
+  }
+
+  // Если переключаем на тот же раунд
+  if (currentRound === roundIndex) {
+    console.log('Уже на этом раунде');
+    return;
+  }
+
+  // Отправляем команду на сервер
+  window.ws.send(JSON.stringify({
+    type: 'skip_round',
+    target_round: roundIndex
+  }));
+
+  // Обновляем кнопки
+  updateRoundButtons(roundIndex);
+}
+
+function updateRoundButtons(activeRound) {
+  var buttons = document.querySelectorAll('#round-switcher .round-btn');
+
+  buttons.forEach(function(btn) {
+    var btnRound = parseInt(btn.getAttribute('data-round'));
+
+    if (btnRound === activeRound) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+}
+
+function checkRoundSwitcherState() {
+  if (!window._gameState || !window._gameState.game) return;
+
+  var game = window._gameState.game;
+  var roundSwitcher = document.getElementById('round-switcher');
+
+  if (!roundSwitcher) return;
+
+  // Проверяем, есть ли активный вопрос
+  var hasActiveQuestion = game.current_question &&
+                          game.current_question.status !== 'answered' &&
+                          game.current_question.status !== 'skipped';
+
+  if (hasActiveQuestion) {
+    roundSwitcher.style.display = 'none';
+    return;
+  }
+
+  // Проверяем фазу игры
+  if (game.phase === 'final') {
+    roundSwitcher.style.display = 'flex';
+    updateRoundButtons(3);
+
+    // Делаем кнопки раундов неактивными
+    var buttons = document.querySelectorAll('#round-switcher .round-btn:not(.final-btn)');
+    buttons.forEach(function(btn) {
+      btn.style.opacity = '0.5';
+      btn.style.cursor = 'not-allowed';
+    });
+  } else if (game.phase === 'playing') {
+    roundSwitcher.style.display = 'flex';
+    updateRoundButtons(game.current_round || 0);
+
+    // Восстанавливаем кнопки
+    var buttons = document.querySelectorAll('#round-switcher .round-btn:not(.final-btn)');
+    buttons.forEach(function(btn) {
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+    });
+  } else {
+    roundSwitcher.style.display = 'none';
+  }
+}
+
 function renderGame(msg){
-  window._gameState = msg;
+      window._gameState = msg;
   var game=msg.game,players=msg.players;
+
+  // Обновляем активную кнопку раунда
+  if (game.phase === 'final') {
+    updateRoundButtons(3);
+  } else if (game.phase === 'playing' && game.current_round !== undefined) {
+    updateRoundButtons(game.current_round);
+  }
 
   function getPlayerName(playerId) {
     if (!playerId) return '';
@@ -5428,6 +5637,37 @@ var ph = '';
   for(var i=0;i<round.prices.length;i++){for(var j=0;j<round.categories.length;j++){var cat=round.categories[j],price=round.prices[i],key=cat+'_'+price,exists=round.questions[key],q=game.current_question,sel=q&&q.category===cat&&q.price===price;
     bh+='<div class="bcell'+(exists?'':' used')+(sel?' selected':'')+'" data-cat="'+cat+'" data-price="'+price+'" data-exists="'+(exists?1:0)+'" data-sel="'+(sel?1:0)+'">'+(exists?price:'')+'</div>'}}
   if(bh!==window._lastBoardHTML){document.getElementById('gboard').innerHTML=bh;window._lastBoardHTML=bh;}
+
+      // Показываем/скрываем кнопки раундов
+  var roundSwitcher = document.getElementById('round-switcher');
+  if (roundSwitcher) {
+    if (game.current_question && game.current_question.status !== 'answered') {
+      roundSwitcher.style.display = 'none';
+    } else {
+      roundSwitcher.style.display = 'flex';
+    }
+
+    // В финале показываем только кнопку "Ф" как активную
+    if (game.phase === 'final') {
+      updateRoundButtons(3);
+      // Делаем кнопки 1, 2, 3 неактивными
+      var buttons = document.querySelectorAll('#round-switcher .round-btn:not(.final-btn)');
+      buttons.forEach(function(btn) {
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+        btn.onclick = null;
+      });
+    } else {
+      // Восстанавливаем кнопки 1, 2, 3
+      var buttons = document.querySelectorAll('#round-switcher .round-btn:not(.final-btn)');
+      buttons.forEach(function(btn) {
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+        var roundNum = parseInt(btn.getAttribute('data-round'));
+        btn.onclick = function() { switchGameRound(roundNum); };
+      });
+    }
+  }
 
   var q=game.current_question;
   if (q) {
@@ -5607,11 +5847,14 @@ if (!window._showScoreMessage) {
 } else if (window._scoreMessageHTML) {
     document.getElementById('ansname').innerHTML = window._scoreMessageHTML;
 }
-    var playersList = getPlayersList();
+        var playersList = getPlayersList();
   if (selectedPlayerIndex >= playersList.length) {
       selectedPlayerIndex = -1;
       keyboardMode = false;
   }
+
+  // Обновляем состояние кнопок переключения раундов
+  checkRoundSwitcherState();
 }
 function selQ(cat,price){ws.send(JSON.stringify({type:'select_question',category:cat,price:price}))}
 function activateA(){window.ws.send(JSON.stringify({type:"open_question"}))}
@@ -5774,9 +6017,19 @@ function eliminateTheme(idx){
 
 function skipToFinal(){
   ws.send(JSON.stringify({type:'skip_to_final'}));
+  updateRoundButtons(3);
 }
-function nextR(){ws.send(JSON.stringify({type:'next_round'}))}
+function nextR(){
+  ws.send(JSON.stringify({type:'next_round'}));
 
+  // Обновляем кнопки после перехода
+  if (window._gameState && window._gameState.game) {
+    var currentRound = window._gameState.game.current_round;
+    if (currentRound !== undefined) {
+      updateRoundButtons(currentRound);
+    }
+  }
+}
 function showFinalQuestion(idx){
   if(!window._gameState) return;
   var game = window._gameState.game;
