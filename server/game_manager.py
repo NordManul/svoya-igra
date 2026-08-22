@@ -186,6 +186,8 @@ class GameManager:
             await self._handle_select_question(room_code, player_id, message)
         elif msg_type == "open_question":
             await self._handle_open_question(room_code, player_id, message)
+        elif msg_type == "change_round":
+            await self._handle_change_round(room_code, player_id, message)
         elif msg_type == "skip_to_final":
             await self._skip_to_final(room_code, player_id, message)
         elif msg_type == "next_round":
@@ -471,6 +473,59 @@ class GameManager:
                     if "players" in game and pid in game["players"]:
                         game["players"][pid]["can_answer"] = True
         await self.broadcast_game_state(room_code)
+
+    async def _handle_change_round(self, room_code, player_id, message):
+        game = self.games.get(room_code)
+        room = self.rooms[room_code]
+        if not game or player_id != room.get("host"):
+            return
+        
+        target_round = message.get("round", 0)
+        
+        if target_round == 3:
+            # Переход в финал
+            game["current_round"] = 2
+            game["current_question"] = None
+            game["phase"] = "final"
+            game["final_phase"] = ""
+        elif 0 <= target_round <= 2:
+            # Переход в обычный раунд
+            game["current_round"] = target_round
+            game["current_question"] = None
+            game["phase"] = "playing"
+            game["answered_players"] = []
+            game["answering_name"] = ""
+        
+        # Отправляем состояние только ведущему
+        if room.get("host"):
+            try:
+                host_ws = room["players"].get(room["host"], {}).get("websocket")
+                if host_ws:
+                    players_info = {}
+                    for pid, p in room["players"].items():
+                        if pid in game.get("players", {}):
+                            players_info[pid] = {
+                                "name": game["players"][pid]["name"],
+                                "score": room["players"][pid].get("score", 0),
+                                "can_answer": game["players"][pid].get("can_answer", False),
+                                "is_host": False,
+                                "has_bet": game["players"][pid].get("has_bet", False),
+                                "has_answered": game["players"][pid].get("has_answered", False)
+                            }
+                    state = {
+                        "type": "game_state",
+                        "game": game,
+                        "players": players_info,
+                        "current_player": room["host"],
+                        "current_selector": game.get("current_selector"),
+                        "selector_name": "",
+                        "host_name": room.get("host_name", ""),
+                        "answering_name": "",
+                        "final_phase": game.get("final_phase", "")
+                    }
+                    await host_ws.send_json(state)
+            except Exception as e:
+                print(f"Error sending round change: {e}")
 
     async def _skip_to_final(self, room_code, player_id, message):
         game = self.games.get(room_code)
