@@ -532,9 +532,6 @@ class GameManager:
         if not game: return
         game["current_round"] = 2
         game["current_question"] = None
-        game["rounds"][0]["questions"] = {}
-        game["rounds"][1]["questions"] = {}
-        game["rounds"][2]["questions"] = {}
         game["phase"] = "final"
         await self.broadcast_game_state(room_code)
 

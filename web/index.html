@@ -4221,25 +4221,25 @@ body {
   z-index: 100;
   display: flex;
   gap: 12px;
-  background: #fffdf9;
-  padding: 10px 14px;
-  border: 2px solid #25233d;
-  border-radius: 18px;
-  box-shadow: 0 4px 0 #25233d;
+  background: transparent;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .round-btn {
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   padding: 0;
   border: 2px solid #25233d;
-  border-radius: 14px;
+  border-radius: 12px;
   background: #fffdf9;
   color: #20203a;
   box-shadow: 0 3px 0 #25233d;
   cursor: pointer;
   font-family: "Manrope", Arial, sans-serif;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 800;
   letter-spacing: 0.5px;
   transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
@@ -4435,7 +4435,7 @@ body {
 <button class="btn btn-green" id="btn-yes" style="display:none;font-size:18px" onclick="evalA(true)">+ Correct</button>
 <button class="btn btn-red" id="btn-no" style="display:none;font-size:18px" onclick="evalA(false)">- Wrong</button>
 <button class="btn btn-gray" id="btn-skip" style="display:none" onclick="skipQ()">Skip</button>
-<button class="btn btn-blue" id="btn-next" style="display:none;font-size:18px" onclick="nextR()">Next Round</button> <button class="btn btn-gray" style="font-size:12px" onclick="skipToFinal()">Перейти к финалу</button>
+ <button class="btn btn-gray" style="font-size:12px" onclick="skipToFinal()">Перейти к финалу</button>
 </div>
 </div>
 
@@ -6050,8 +6050,14 @@ function eliminateTheme(idx){
 
 
 function skipToFinal(){
+  saveVisibleRoundState();
   ws.send(JSON.stringify({type:'skip_to_final'}));
   updateRoundButtons(3);
+  currentRound = 3;
+  if (window._gameState && window._gameState.game) {
+    window._gameState.game.phase = 'final';
+    renderGame(window._gameState);
+  }
 }
 function nextR(){
   ws.send(JSON.stringify({type:'next_round'}));
