@@ -5259,14 +5259,36 @@ document.getElementById('lobby-screen').style.display = 'block';
         }
         return;
     }
-     if (msg.type === 'round_changed' || msg.type === 'roundchange') {
-        console.log('Раунд изменен:', msg);
-        if (msg.round !== undefined) {
-          updateRoundButtons(msg.round);
-        }
-        return;
-      }
-            if (msg.type === 'game_state' || msg.type === 'gamestate') {
+     // Добавьте этот обработчик в ws.onmessage после других обработчиков
+if (msg.type === 'round_changed' || msg.type === 'roundchange') {
+  console.log('Раунд изменен:', msg);
+  if (msg.round !== undefined) {
+    currentRound = msg.round;
+    updateRoundButtons(msg.round);
+
+    // Обновляем состояние игры
+    if (window._gameState && window._gameState.game) {
+      window._gameState.game.current_round = msg.round;
+      renderGame(window._gameState);
+    }
+  }
+  return;
+}
+      // Добавьте этот обработчик
+if (msg.type === 'skipround_success' || msg.type === 'skipround_success') {
+  console.log('Пропуск раунда успешен:', msg);
+  if (msg.round !== undefined) {
+    currentRound = msg.round;
+    updateRoundButtons(msg.round);
+
+    if (window._gameState && window._gameState.game) {
+      window._gameState.game.current_round = msg.round;
+      renderGame(window._gameState);
+    }
+  }
+  return;
+}
+      if (msg.type === 'game_state' || msg.type === 'gamestate') {
         const phase = msg.game?.phase;
 
         if (phase === 'finished') return;
@@ -5356,63 +5378,6 @@ function launchGame(){window.ws.send(JSON.stringify({type:"start_game"}));docume
 var _lastBoardHTML='';
 if(typeof _lastBoardHTML==='undefined'){window._lastBoardHTML='';}
 
-function switchGameRound(roundIndex) {
-  if (!window.ws || window.ws.readyState !== WebSocket.OPEN) {
-    console.error('WebSocket не подключен');
-    return;
-  }
-
-  if (!window._gameState || !window._gameState.game) {
-    console.error('Нет данных об игре');
-    return;
-  }
-
-  var game = window._gameState.game;
-  var currentPhase = game.phase;
-  var currentRound = game.current_round || 0;
-
-  console.log('switchGameRound:', roundIndex, 'currentPhase:', currentPhase, 'currentRound:', currentRound);
-
-  // Если игра в финале и пытаемся перейти на обычный раунд
-  if (currentPhase === 'final' && roundIndex !== 3) {
-    console.log('Нельзя перейти с финала на обычный раунд');
-    return;
-  }
-
-  // Если пытаемся перейти на финал
-  if (roundIndex === 3) {
-    skipToFinal();
-    return;
-  }
-
-  // Если игра не в фазе playing
-  if (currentPhase !== 'playing') {
-    console.log('Игра не в фазе playing');
-    return;
-  }
-
-  // Если есть активный вопрос
-  if (game.current_question && game.current_question.status !== 'answered') {
-    console.log('Есть активный вопрос, нельзя переключать');
-    return;
-  }
-
-  // Если переключаем на тот же раунд
-  if (currentRound === roundIndex) {
-    console.log('Уже на этом раунде');
-    return;
-  }
-
-  // Отправляем команду на сервер
-  window.ws.send(JSON.stringify({
-    type: 'skip_round',
-    target_round: roundIndex
-  }));
-
-  // Обновляем кнопки
-  updateRoundButtons(roundIndex);
-}
-
 function updateRoundButtons(activeRound) {
   var buttons = document.querySelectorAll('#round-switcher .round-btn');
 
@@ -5445,18 +5410,19 @@ function checkRoundSwitcherState() {
     return;
   }
 
-  // Проверяем фазу игры
   if (game.phase === 'final') {
-    roundSwitcher.style.display = 'flex';
-    updateRoundButtons(3);
+  roundSwitcher.style.display = 'flex';
+  updateRoundButtons(3);
 
-    // Делаем кнопки раундов неактивными
-    var buttons = document.querySelectorAll('#round-switcher .round-btn:not(.final-btn)');
-    buttons.forEach(function(btn) {
-      btn.style.opacity = '0.5';
-      btn.style.cursor = 'not-allowed';
+  document
+    .querySelectorAll('#round-switcher .round-btn:not(.final-btn)')
+    .forEach(function(btn) {
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
     });
-  } else if (game.phase === 'playing') {
+
+  return;
+}else if (game.phase === 'playing') {
     roundSwitcher.style.display = 'flex';
     updateRoundButtons(game.current_round || 0);
 
@@ -5472,8 +5438,13 @@ function checkRoundSwitcherState() {
 }
 
 function renderGame(msg){
-      window._gameState = msg;
+  window._gameState = msg;
   var game=msg.game,players=msg.players;
+
+  if (game.phase !== 'final') {
+  window.lastBoardHTML = null;
+  document.getElementById('game-screen').classList.remove('final-game-screen');
+}
 
   // Обновляем активную кнопку раунда
   if (game.phase === 'final') {
@@ -5481,6 +5452,69 @@ function renderGame(msg){
   } else if (game.phase === 'playing' && game.current_round !== undefined) {
     updateRoundButtons(game.current_round);
   }
+  else {
+  const roundIndex = game.currentround ?? 0;
+  const round = T.rounds[roundIndex];
+  const board = document.getElementById('gboard');
+
+  document.getElementById('rname').textContent =
+    round?.name || `Раунд ${roundIndex + 1}`;
+
+  if (!round || !round.categories) {
+    board.innerHTML = '';
+    return;
+  }
+
+  let boardHtml = '';
+
+  round.categories.forEach((category) => {
+    boardHtml += `
+      <div class="bcell head">
+        ${category.name || 'Тема'}
+      </div>
+    `;
+  });
+
+  const questionCount = Math.max(
+    ...round.categories.map((category) => category.questions.length)
+  );
+
+  for (let questionIndex = 0; questionIndex < questionCount; questionIndex++) {
+    round.categories.forEach((category, categoryIndex) => {
+      const question = category.questions[questionIndex];
+
+      if (!question) {
+        boardHtml += '<div class="bcell used"></div>';
+        return;
+      }
+
+      /*
+        used берётся из состояния сервера.
+        Нужно подставить ваше реальное поле состояния вопроса,
+        если оно называется иначе: used, answered, status и т. п.
+      */
+      const isUsed =
+        question.used === true ||
+        question.answered === true ||
+        question.status === 'answered' ||
+        question.status === 'skipped';
+
+      boardHtml += `
+        <div
+          class="bcell${isUsed ? ' used' : ''}"
+          data-cat="${categoryIndex}"
+          data-price="${question.price}"
+          data-exists="1"
+          data-sel="0"
+        >
+          ${question.price}
+        </div>
+      `;
+    });
+  }
+
+  board.innerHTML = boardHtml;
+}
 
   function getPlayerName(playerId) {
     if (!playerId) return '';
@@ -6384,6 +6418,165 @@ function showFinalResults(scores) {
     gameScreen.style.opacity = '1';
 
     console.log('=== showFinalResults END ===');
+}
+
+  /* ===== Переключение игровых раундов без сброса состояния ===== */
+
+window.gameRoundState = window.gameRoundState || {
+  used: [new Set(), new Set(), new Set()],
+  finalOpened: false
+};
+
+function getQuestionKey(categoryIndex, questionIndex) {
+  return categoryIndex + ':' + questionIndex;
+}
+
+function saveVisibleRoundState() {
+  if (currentRound < 0 || currentRound > 2) return;
+
+  const cells = document.querySelectorAll(
+    '#gboard .bcell[data-cat][data-price]'
+  );
+
+  cells.forEach((cell) => {
+    if (!cell.classList.contains('used')) return;
+
+    const categoryIndex = Number(cell.dataset.cat);
+    const price = Number(cell.dataset.price);
+    const round = T.rounds[currentRound];
+
+    if (!round || !round.categories[categoryIndex]) return;
+
+    const questionIndex = round.categories[categoryIndex].questions.findIndex(
+      (question) => Number(question.price) === price
+    );
+
+    if (questionIndex !== -1) {
+      window.gameRoundState.used[currentRound].add(
+        getQuestionKey(categoryIndex, questionIndex)
+      );
+    }
+  });
+}
+
+function updateRoundSwitcher() {
+  document.querySelectorAll('#round-switcher .round-btn').forEach((button) => {
+    button.classList.toggle(
+      'active',
+      Number(button.dataset.round) === currentRound
+    );
+  });
+}
+
+function renderRegularGameRound(roundIndex) {
+  const round = T.rounds[roundIndex];
+  const board = document.getElementById('gboard');
+
+  if (!round || !board) return;
+
+  document.getElementById('rname').textContent =
+    round.name || `Раунд ${roundIndex + 1}`;
+
+  let html = '';
+
+  round.categories.forEach((category) => {
+    html += `
+      <div class="bcell head">
+        ${category.name || 'Тема'}
+      </div>
+    `;
+  });
+
+  const maxQuestions = Math.max(
+    ...round.categories.map((category) => category.questions.length)
+  );
+
+  for (let questionIndex = 0; questionIndex < maxQuestions; questionIndex++) {
+    round.categories.forEach((category, categoryIndex) => {
+      const question = category.questions[questionIndex];
+
+      if (!question) {
+        html += '<div class="bcell used"></div>';
+        return;
+      }
+      if (currentRound >= 0 && currentRound <= 2) {
+  const categoryIndex = Number(cell.dataset.cat);
+  const questionIndex = Number(cell.dataset.questionIndex);
+
+  window.gameRoundState.used[currentRound].add(
+    getQuestionKey(categoryIndex, questionIndex)
+  );
+}
+
+      const questionKey = getQuestionKey(categoryIndex, questionIndex);
+      const isUsed = window.gameRoundState.used[roundIndex].has(questionKey);
+
+      html += `
+        <div
+          class="bcell${isUsed ? ' used' : ''}"
+          data-cat="${categoryIndex}"
+          data-price="${question.price}"
+          data-exists="1"
+          data-sel="0"
+          data-question-index="${questionIndex}"
+        >
+          ${question.price}
+        </div>
+      `;
+    });
+  }
+
+  board.innerHTML = html;
+}
+
+function switchGameRound(roundIndex) {
+  if (!Number.isInteger(roundIndex) || roundIndex < 0 || roundIndex > 3) {
+    return;
+  }
+
+  if (!window.ws || window.ws.readyState !== WebSocket.OPEN) {
+    console.error('WebSocket is not connected');
+    return;
+  }
+
+  // Проверяем, есть ли активный вопрос
+  const game = window._gameState?.game;
+  const currentQuestion = game?.current_question;
+
+  if (
+    currentQuestion &&
+    currentQuestion.status !== 'answered' &&
+    currentQuestion.status !== 'skipped'
+  ) {
+    console.warn('Finish or skip the active question before changing round');
+    return;
+  }
+
+  // Если это финал
+  if (roundIndex === 3) {
+    if (game?.phase !== 'final') {
+      skipToFinal();
+    } else {
+      updateRoundButtons(3);
+    }
+    return;
+  }
+
+  // Отправляем запрос на смену раунда
+  window.ws.send(JSON.stringify({
+    type: 'change_round',  // Изменяем тип сообщения
+    round: roundIndex
+  }));
+
+  // Обновляем локальное состояние
+  currentRound = roundIndex;
+  updateRoundButtons(roundIndex);
+
+  // Перерисовываем доску
+  if (window._gameState && window._gameState.game) {
+    window._gameState.game.current_round = roundIndex;
+    renderGame(window._gameState);
+  }
 }
 </script>
 </body>
